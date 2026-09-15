@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Comptes régionaux Russie · Dashboard interactif</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+:root {
+    --blue: #0055A4; --blue-dark: #003D7A; --red: #EF4135;
+    --dark: #0B1E3A; --gray: #64748B; --gray-light: #94A3B8;
+    --light: #F0F4F8; --green: #10B981; --amber: #F59E0B;
+    --purple: #8B5CF6; --border: #e2e8f0;
+    --bg: #F0F4F8; --card: #FFFFFF; --text: #0B1E3A;
+    --text-muted: #64748B; --hover: #F8FAFC;
+    --shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+[data-theme="dark"] {
+    --bg: #0F172A; --card: #1E293B; --text: #F1F5F9;
+    --text-muted: #94A3B8; --border: #334155;
+    --light: #0F172A; --dark: #F1F5F9;
+    --hover: #334155;
+    --shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    padding: 14px; font-size: 13px; line-height: 1.5;
+    transition: background 0.2s, color 0.2s;
+}
+.container { max-width: 1700px; margin: 0 auto; }
+
+.tricolor {
+    height: 5px;
+    background: linear-gradient(to right, #fff 33%, #0039A6 33%, #0039A6 66%, #D52B1E 66%);
+    border-radius: 4px 4px 0 0;
+}
+
+header {
+    background: var(--card); padding: 16px 22px; border-radius: 0 0 14px 14px;
+    margin-bottom: 14px; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 12px;
+    box-shadow: var(--shadow); border: 1px solid var(--border); border-top: none;
+}
+header h1 { font-size: 1.2rem; font-weight: 800; }
+header h1 .blue { color: var(--blue); }
+header h1 .red { color: var(--red); }
+header .subtitle { font-size: 0.66rem; color: var(--text-muted); margin-top: 2px; }
+.header-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.badge {
+    background: var(--bg); padding: 4px 10px; border-radius: 20px;
+    font-weight: 600; border: 1.5px solid var(--blue); color: var(--blue);
+    font-size: 0.64rem; display: inline-block;
+}
+.badge.red { border-color: var(--red); color: var(--red); }
+.badge.green { border-color: var(--green); color: var(--green); }
+.badge.purple { border-color: var(--purple); color: var(--purple); }
+
+.icon-btn {
+    background: transparent; border: 1.5px solid var(--border);
+    width: 34px; height: 34px; border-radius: 50%;
+    cursor: pointer; font-size: 1rem; color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+}
+.icon-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+/* TABS PRINCIPAUX */
+.main-tabs {
+    display: flex; gap: 2px; margin-bottom: 14px;
+    background: var(--card); padding: 6px; border-radius: 12px;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+.main-tab {
+    flex: 1; min-width: 120px;
+    background: transparent; border: none;
+    padding: 10px 14px; font-size: 0.76rem; font-weight: 700;
+    color: var(--text-muted); cursor: pointer;
+    border-radius: 8px; transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    white-space: nowrap;
+}
+.main-tab:hover { background: var(--hover); color: var(--blue); }
+.main-tab.active { background: var(--blue); color: white; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.section {
+    background: var(--card); padding: 16px 20px; border-radius: 12px;
+    margin-bottom: 12px; box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+.section h2 {
+    font-size: 0.86rem; font-weight: 800; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+}
+.section h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; background: var(--blue); color: white;
+    border-radius: 5px; font-size: 0.66rem; font-weight: 800;
+}
+.section h2 small {
+    font-size: 0.66rem; font-weight: 500; color: var(--text-muted);
+    margin-left: auto; font-family: 'JetBrains Mono', monospace;
+}
+
+/* KPI */
+.kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+}
+.kpi {
+    background: var(--card); padding: 10px 12px; border-radius: 9px;
+    border-left: 3px solid var(--blue);
+    border: 1px solid var(--border); border-left-width: 3px;
+}
+.kpi.bad { border-left-color: var(--red); background: rgba(239,65,53,0.05); }
+.kpi.warn { border-left-color: var(--amber); background: rgba(245,158,11,0.05); }
+.kpi.good { border-left-color: var(--green); background: rgba(16,185,129,0.05); }
+.kpi .label { font-size: 0.58rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+.kpi .val { font-size: 1rem; font-weight: 800; margin-top: 3px; font-family: 'JetBrains Mono', monospace; color: var(--text); }
+.kpi .sub { font-size: 0.6rem; color: var(--text-muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+/* FILTRES */
+.filters-bar {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 8px; margin-bottom: 12px;
+}
+.filter-group { display: flex; flex-direction: column; gap: 3px; }
+.filter-group label {
+    font-size: 0.62rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.3px;
+}
+.filter-group select, .filter-group input {
+    padding: 7px 10px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 0.76rem;
+    font-family: 'Inter', sans-serif;
+    background: var(--card); color: var(--text);
+    outline: none; transition: border-color 0.15s;
+}
+.filter-group select:focus, .filter-group input:focus { border-color: var(--blue); }
+
+/* REGION GRID */
+.region-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 5px; max-height: 320px; overflow-y: auto;
+    padding: 10px; background: var(--bg); border-radius: 9px;
+    border: 1.5px solid var(--border);
+}
+.region-grid::-webkit-scrollbar { width: 5px; }
+.region-grid::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 3px; }
+.region-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 9px; background: var(--card); border-radius: 6px;
+    border: 1.5px solid var(--border); cursor: pointer;
+    transition: all 0.12s; font-size: 0.7rem; font-weight: 500;
+    user-select: none;
+}
+.region-item:hover { border-color: var(--blue); }
+.region-item.checked { background: rgba(0,85,164,0.1); border-color: var(--blue); }
+.region-item.checked .region-name { color: var(--blue); font-weight: 700; }
+.region-item input[type="checkbox"] { width: 13px; height: 13px; accent-color: var(--blue); flex-shrink: 0; }
+.region-item .region-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.region-item .region-debt { font-size: 0.6rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
+.region-item.disabled { opacity: 0.3; pointer-events: none; }
+
+.counter {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    font-size: 0.64rem; font-weight: 700; margin-left: 6px;
+    background: var(--gray); color: white;
+}
+.counter.ok { background: var(--green); }
+.counter.warn { background: var(--amber); }
+.counter.bad { background: var(--red); }
+
+/* BUTTONS */
+.btn {
+    border: none; padding: 7px 13px; border-radius: 15px;
+    font-size: 0.7rem; font-weight: 700; cursor: pointer;
+    font-family: 'Inter', sans-serif; color: white;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 4px;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+.btn-blue { background: var(--blue); }
+.btn-dark { background: var(--dark); color: white; }
+.btn-gray { background: var(--gray); }
+.btn-amber { background: var(--amber); }
+.btn-red { background: var(--red); }
+.btn-green { background: var(--green); }
+.btn-purple { background: var(--purple); }
+.btn-outline { background: var(--card); color: var(--text); border: 1.5px solid var(--border); }
+.btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+
+/* CHARTS */
+.chart-wrap { position: relative; height: 400px; }
+.chart-wrap-sm { height: 300px; }
+.chart-wrap-lg { height: 480px; }
+
+/* TABS INTERNES */
+.tabs { display: flex; gap: 2px; margin-bottom: 12px; border-bottom: 2px solid var(--border); flex-wrap: wrap; }
+.tab-btn {
+    background: transparent; border: none; padding: 8px 13px;
+    font-size: 0.72rem; font-weight: 700; color: var(--text-muted);
+    cursor: pointer; font-family: 'Inter', sans-serif;
+    border-bottom: 3px solid transparent; transition: all 0.15s;
+    margin-bottom: -2px; white-space: nowrap;
+}
+.tab-btn:hover { color: var(--blue); }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+.subtab-panel { display: none; }
+.subtab-panel.active { display: block; }
+
+/* TABLE */
+.table-container {
+    max-height: 550px; overflow: auto; border-radius: 8px;
+    border: 1px solid var(--border);
+}
+.table-container::-webkit-scrollbar { width: 7px; height: 7px; }
+.table-container::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 4px; }
+
+.data-table {
+    width: 100%; border-collapse: collapse; font-size: 0.66rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+.data-table th {
+    background: var(--bg); padding: 7px 9px; font-weight: 700;
+    color: var(--text); text-align: right;
+    border-bottom: 2px solid var(--blue);
+    position: sticky; top: 0; z-index: 3;
+    font-family: 'Inter', sans-serif; font-size: 0.62rem;
+    white-space: nowrap; cursor: pointer; user-select: none;
+}
+.data-table th:hover { background: var(--hover); }
+.data-table th:first-child { text-align: left; }
+.data-table th.sortable::after { content: ' ⇅'; font-size: 0.6rem; opacity: 0.5; }
+.data-table th.sort-asc::after { content: ' ▲'; color: var(--blue); opacity: 1; }
+.data-table th.sort-desc::after { content: ' ▼'; color: var(--blue); opacity: 1; }
+.data-table td {
+    padding: 5px 9px; text-align: right;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.data-table td:first-child { text-align: left; font-weight: 700; }
+.data-table tbody tr:hover td { background: var(--hover); }
+.data-table tbody tr.selected td { background: rgba(0,85,164,0.1); }
+.data-table .pos { color: var(--green); font-weight: 700; }
+.data-table .neg { color: var(--red); font-weight: 700; }
+.data-table .warn { color: var(--amber); font-weight: 700; }
+
+.district-chip {
+    display: inline-block; padding: 1px 6px; border-radius: 8px;
+    font-size: 0.58rem; font-weight: 700; font-family: 'Inter', sans-serif;
+}
+
+/* MÉTHODOLOGIE */
+.methodology-block {
+    background: var(--bg); border-left: 4px solid var(--purple);
+    padding: 14px 18px; border-radius: 8px; margin-bottom: 14px;
+    font-size: 0.74rem; line-height: 1.75;
+    color: var(--text);
+}
+.methodology-block h3 {
+    font-size: 0.82rem; font-weight: 800; margin-bottom: 8px;
+    color: var(--purple); display: flex; align-items: center; gap: 6px;
+}
+.methodology-block code {
+    background: var(--card); padding: 2px 6px; border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    border: 1px solid var(--border); color: var(--blue);
+}
+.methodology-block ul { padding-left: 20px; margin: 6px 0; }
+.methodology-block li { margin: 3px 0; }
+.methodology-block strong { color: var(--text); }
+
+.formula-box {
+    background: linear-gradient(135deg, var(--dark) 0%, #1E3A8A 100%);
+    color: white; padding: 14px 20px; border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+    text-align: center; margin: 10px 0; line-height: 1.8;
+}
+
+/* CLASSROOM */
+.exercise {
+    background: var(--bg); border-radius: 10px; padding: 14px 18px;
+    margin-bottom: 12px; border-left: 4px solid var(--green);
+}
+.exercise h4 {
+    font-size: 0.8rem; font-weight: 800; margin-bottom: 8px;
+    color: var(--green);
+}
+.exercise ol { padding-left: 20px; font-size: 0.74rem; line-height: 1.7; }
+.exercise ol li { margin: 4px 0; }
+.exercise .hint {
+    background: rgba(16,185,129,0.1); border-radius: 6px;
+    padding: 8px 12px; margin-top: 10px; font-size: 0.72rem;
+    color: var(--text); border-left: 3px solid var(--green);
+}
+
+/* HISTORICAL ANNOTATIONS */
+.history-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+}
+.history-card {
+    background: var(--bg); padding: 12px 14px; border-radius: 9px;
+    border-left: 3px solid var(--amber);
+}
+.history-card .year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem; font-weight: 800; color: var(--amber);
+}
+.history-card .event {
+    font-size: 0.74rem; font-weight: 700; margin: 4px 0;
+    color: var(--text);
+}
+.history-card .desc {
+    font-size: 0.68rem; color: var(--text-muted); line-height: 1.5;
+}
+
+/* MAP */
+.map-container {
+    display: grid; grid-template-columns: 1fr 320px; gap: 16px;
+    align-items: start;
+}
+@media (max-width: 900px) { .map-container { grid-template-columns: 1fr; } }
+.map-svg { width: 100%; height: auto; max-height: 600px; }
+.region-path {
+    cursor: pointer; transition: all 0.15s;
+    stroke: var(--card); stroke-width: 0.5;
+}
+.region-path:hover { filter: brightness(1.2); stroke: var(--blue); stroke-width: 1.5; }
+.region-path.selected { stroke: var(--dark); stroke-width: 2; filter: brightness(1.15); }
+.map-legend {
+    background: var(--bg); padding: 14px 16px; border-radius: 10px;
+    border: 1px solid var(--border);
+}
+.map-legend h4 { font-size: 0.76rem; font-weight: 800; margin-bottom: 10px; }
+.legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.7rem; padding: 4px 0;
+}
+.legend-swatch {
+    width: 16px; height: 16px; border-radius: 3px;
+}
+
+/* EXPORT PDF */
+.pdf-note {
+    background: rgba(0,85,164,0.08); border-left: 3px solid var(--blue);
+    padding: 10px 14px; border-radius: 8px; margin-bottom: 12px;
+    font-size: 0.72rem; color: var(--text);
+}
+
+footer {
+    margin-top: 20px; padding: 14px 20px; background: var(--card);
+    border-radius: 12px; font-size: 0.68rem; color: var(--text-muted);
+    display: flex; justify-content: space-between; flex-wrap: wrap;
+    gap: 8px; border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+@media (max-width: 768px) {
+    body { padding: 8px; }
+    header h1 { font-size: 0.95rem; }
+    .section { padding: 12px; }
+    .chart-wrap, .chart-wrap-lg { height: 320px; }
+    .region-grid { grid-template-columns: 1fr; }
+    .main-tab { font-size: 0.68rem; padding: 8px 10px; }
+}
+</style>
+</head>
+<body data-theme="light">
+<div class="container">
+
+    <div class="tricolor"></div>
+
+    <header>
+        <div>
+            <h1>
+                <span class="blue">Comptes</span> régionaux ·
+                <span class="red">Russie</span>
+                <span style="font-size:0.6rem;color:var(--text-muted);">· 89 sujets fédéraux</span>
+            </h1>
+            <div class="subtitle">Dashboard interactif · Comparaison multi-régions · Analyse économétrique</div>
+        </div>
+        <div class="header-actions">
+            <span class="badge" id="yearBadge">2025</span>
+            <span class="badge purple">VFI</span>
+            <span class="badge green">DSA</span>
+            <button class="icon-btn" id="themeBtn" title="Thème clair/sombre">🌙</button>
+            <button class="icon-btn" id="urlBtn" title="Copier le lien partagé">🔗</button>
+        </div>
+    </header>
+
+    <!-- MAIN TABS -->
+    <div class="main-tabs">
+        <button class="main-tab active" data-main="tab-overview">📊 Vue d'ensemble</button>
+        <button class="main-tab" data-main="tab-compare">🔍 Comparaison</button>
+        <button class="main-tab" data-main="tab-map">🗺️ Carte</button>
+        <button class="main-tab" data-main="tab-sustain">⚖️ Soutenabilité</button>
+        <button class="main-tab" data-main="tab-data">📋 Données</button>
+        <button class="main-tab" data-main="tab-method">📚 Méthodologie</button>
+        <button class="main-tab" data-main="tab-class">🎓 Classroom</button>
+    </div>
+
+    <!-- ===================== TAB 1 : OVERVIEW ===================== -->
+    <div class="tab-panel active" id="tab-overview">
+
+        <div class="section">
+            <h2><span class="num">1</span>Indicateurs globaux · <span id="yearLabel1">2025</span><small id="kpiSource">Source : Roskazna · Minfin · ACRA</small></h2>
+            <div class="kpi-grid" id="kpiGrid"></div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">2</span>Évolution historique 2015-2025<small>Recettes · Dépenses · Dette</small></h2>
+            <div class="chart-wrap chart-wrap-lg"><canvas id="overviewEvolution"></canvas></div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">3</span>Top 10 régions par dette<small>Encours 2025</small></h2>
+            <div class="chart-wrap"><canvas id="topDebtChart"></canvas></div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">4</span>Contexte historique<small>Annotations</small></h2>
+            <div class="history-grid" id="historyGrid"></div>
+        </div>
+    </div>
+
+    <!-- ===================== TAB 2 : COMPARAISON ===================== -->
+    <div class="tab-panel" id="tab-compare">
+
+        <div class="section">
+            <h2><span class="num">1</span>Filtres & sélection<small id="compareCounter"></small></h2>
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Année</label>
+                    <select id="filterYear">
+                        <option value="2025" selected>2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                        <option value="2020">2020</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>District fédéral</label>
+                    <select id="filterDistrict">
+                        <option value="">Tous (89)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Trier par</label>
+                    <select id="sortRegions">
+                        <option value="name">Nom (A→Z)</option>
+                        <option value="debt-desc">Dette ↓</option>
+                        <option value="debt-asc">Dette ↑</option>
+                        <option value="vfi-desc">VFI ↓</option>
+                        <option value="grp-desc">GRP ↓</option>
+                        <option value="sustain-desc">Soutenabilité ↓</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Recherche</label>
+                    <input type="text" id="searchRegion" placeholder="Nom de région…">
+                </div>
+                <div class="filter-group">
+                    <label>Actions rapides</label>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                        <button class="btn btn-blue" id="btnSelectAll">Tout</button>
+                        <button class="btn btn-outline" id="btnSelectNone">Aucun</button>
+                        <button class="btn btn-purple" id="btnSelectTop10">Top 10 dette</button>
+                        <button class="btn btn-green" id="btnSelectDonators">Donatrices</button>
+                        <button class="btn btn-red" id="btnSelectRisky">Risque élevé</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin: 8px 0 6px 0;">
+                <span style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">Régions sélectionnées</span>
+                <span class="counter" id="counter">0</span>
+            </div>
+            <div class="region-grid" id="regionGrid"></div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">2</span>Analyses comparatives</h2>
+            <div class="tabs">
+                <button class="tab-btn active" data-sub="sub-bar">Barres</button>
+                <button class="tab-btn" data-sub="sub-radar">Radar</button>
+                <button class="tab-btn" data-sub="sub-timeseries">Séries temporelles</button>
+                <button class="tab-btn" data-sub="sub-scatter">Scatter VFI×Sout.</button>
+                <button class="tab-btn" data-sub="sub-instruments">Structure dette</button>
+                <button class="tab-btn" data-sub="sub-district">Par district</button>
+                <button class="tab-btn" data-sub="sub-clusters">Clusters</button>
+            </div>
+
+            <div class="subtab-panel active" id="sub-bar">
+                <div class="chart-wrap chart-wrap-lg"><canvas id="multibarChart"></canvas></div>
+            </div>
+            <div class="subtab-panel" id="sub-radar">
+                <div class="chart-wrap chart-wrap-lg"><canvas id="radarChart"></canvas></div>
+            </div>
+            <div class="subtab-panel" id="sub-timeseries">
+                <div class="chart-wrap chart-wrap-lg"><canvas id="timeseriesChart"></canvas></div>
+            </div>
+            <div class="subtab-panel" id="sub-scatter">
+                <div class="chart-wrap chart-wrap-lg"><canvas id="scatterChart"></canvas></div>
+            </div>
+            <div class="subtab-panel" id="sub-instruments">
+                <div class="chart-wrap chart-wrap-lg"><canvas id="instrumentsChart"></canvas></div>
+            </div>
+            <div class="subtab-panel" id="sub-district">
+                <div class="chart-wrap chart-wrap-lg"><canvas id="districtChart"></canvas></div>
+            </div>
+            <div class="subtab-panel" id="sub-clusters">
+                <div class="chart-wrap chart-wrap-lg"><canvas id="clustersChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== TAB 3 : MAP ===================== -->
+    <div class="tab-panel" id="tab-map">
+        <div class="section">
+            <h2><span class="num">1</span>Carte choroplèthe<small>Couleur = dette (Md₽)</small></h2>
+            <div class="map-container">
+                <div id="mapSvgWrap">
+                    <svg class="map-svg" viewBox="0 0 1000 600" id="russiaMap"></svg>
+                </div>
+                <div class="map-legend">
+                    <h4>📊 Légende</h4>
+                    <div class="legend-item"><div class="legend-swatch" style="background:#10B981;"></div><span>Dette < 50 Md₽</span></div>
+                    <div class="legend-item"><div class="legend-swatch" style="background:#F59E0B;"></div><span>Dette 50-100 Md₽</span></div>
+                    <div class="legend-item"><div class="legend-swatch" style="background:#EF4135;"></div><span>Dette > 100 Md₽</span></div>
+                    <div class="legend-item"><div class="legend-swatch" style="background:#7F1D1D;"></div><span>Dette > 200 Md₽</span></div>
+                    <hr style="margin:10px 0;border:none;border-top:1px solid var(--border);">
+                    <h4 style="margin-top:8px;">🎯 Actions</h4>
+                    <p style="font-size:0.68rem;color:var(--text-muted);line-height:1.6;margin-top:6px;">
+                        Cliquez sur une région pour la sélectionner ou la désélectionner.
+                        Les régions sélectionnées sont visibles dans l'onglet Comparaison.
+                    </p>
+                    <button class="btn btn-outline" id="btnMapReset" style="width:100%;margin-top:10px;justify-content:center;">↻ Réinitialiser la sélection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== TAB 4 : SUSTAINABILITY ===================== -->
+    <div class="tab-panel" id="tab-sustain">
+        <div class="section">
+            <h2><span class="num">1</span>Analyse de soutenabilité (DSA)<small>Cadre FMI adapté aux régions russes</small></h2>
+            <div class="methodology-block">
+                <h3>⚖️ Indicateurs de soutenabilité</h3>
+                Le dashboard calcule pour chaque région un indice composite de soutenabilité sur la base de trois ratios :
+                <ul>
+                    <li><strong>Dette / GRP</strong> — seuils : 🟢 &lt;5% · 🟡 5-10% · 🔴 &gt;10%</li>
+                    <li><strong>Dette / Recettes</strong> — seuils : 🟢 &lt;42% · 🟡 42-70% · 🔴 &gt;70%</li>
+                    <li><strong>VFI (Déséquilibre Budgétaire Vertical)</strong> — seuils : 🟢 &lt;30% · 🟡 30-60% · 🔴 &gt;60%</li>
+                </ul>
+                Le <strong>VFI</strong> mesure la part des transferts fédéraux dans les recettes régionales. Une relation inverse a été établie entre le VFI et la soutenabilité (notation ACRA).
+            </div>
+            <div class="kpi-grid" id="sustainKpiGrid"></div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">2</span>Nuage de risque<small>VFI × Soutenabilité</small></h2>
+            <div class="chart-wrap chart-wrap-lg"><canvas id="sustainScatter"></canvas></div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">3</span>Matrice de sensibilité<small>(r − g) × Dette initiale → pb* stabilisant</small></h2>
+            <div class="chart-wrap chart-wrap-lg"><canvas id="matrixChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ===================== TAB 5 : DATA ===================== -->
+    <div class="tab-panel" id="tab-data">
+        <div class="section">
+            <h2><span class="num">1</span>Tableau détaillé<small>Cliquez sur les en-têtes pour trier · Cliquez sur une ligne pour sélectionner</small></h2>
+            <div class="actions" style="margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="btn btn-blue" id="btnCsv">📥 CSV</button>
+                <button class="btn btn-gray" id="btnJson">📥 JSON</button>
+                <button class="btn btn-amber" id="btnXls">📥 Excel</button>
+                <button class="btn btn-purple" id="btnPdf">📄 Rapport PDF</button>
+                <button class="btn btn-green" id="btnApi">🔗 API JSON</button>
+            </div>
+            <div class="pdf-note">
+                💡 <strong>Astuce :</strong> Utilisez le bouton PDF pour générer un rapport complet avec KPI, graphiques et tableau. Le bouton API ouvre le point d'accès JSON statique réutilisable.
+            </div>
+            <div class="table-container">
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th data-sort="name">Région</th>
+                            <th data-sort="district">District</th>
+                            <th data-sort="grp">GRP (Md₽)</th>
+                            <th data-sort="pop">Pop. (k)</th>
+                            <th data-sort="rev">Recettes (Md₽)</th>
+                            <th data-sort="exp">Dépenses (Md₽)</th>
+                            <th data-sort="solde">Solde</th>
+                            <th data-sort="debt">Dette</th>
+                            <th data-sort="debtRatio">Dette/GRP</th>
+                            <th data-sort="debtRev">Dette/Rec.</th>
+                            <th data-sort="vfi">VFI</th>
+                            <th data-sort="sustain">Sout.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== TAB 6 : METHODOLOGY ===================== -->
+    <div class="tab-panel" id="tab-method">
+
+        <div class="section">
+            <h2><span class="num">1</span>Équation de Domar<small>Dynamique de la dette</small></h2>
+            <div class="formula-box">
+                Δb<sub>t</sub> = [ (r<sub>t</sub> − g<sub>t</sub>) / (1 + g<sub>t</sub>) ] · b<sub>t−1</sub> − pb<sub>t</sub> / (1 + g<sub>t</sub>)
+            </div>
+            <div class="methodology-block">
+                <h3>📐 Variables</h3>
+                <ul>
+                    <li><code>b</code> : ratio dette / PIB (ou dette / GRP au niveau régional)</li>
+                    <li><code>r</code> : taux d'intérêt effectif sur la dette</li>
+                    <li><code>g</code> : croissance nominale (croissance réelle + inflation)</li>
+                    <li><code>pb</code> : solde primaire en % du PIB</li>
+                </ul>
+                Le <strong>solde primaire stabilisant</strong> est le solde qui maintient le ratio constant :
+                <div class="formula-box" style="font-size:0.76rem;">pb* = [(r − g) / (1 + g)] · b</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">2</span>Déséquilibre budgétaire vertical (VFI)<small>Dépendance aux transferts</small></h2>
+            <div class="methodology-block">
+                <h3>🏛️ Définition</h3>
+                Le VFI mesure la part des transferts fédéraux dans les recettes régionales :
+                <div class="formula-box" style="font-size:0.76rem;">VFI = Transferts fédéraux / Recettes totales × 100</div>
+                <ul>
+                    <li>VFI <strong>&lt; 30%</strong> : région autonome (donatrice nette)</li>
+                    <li>VFI <strong>30-60%</strong> : dépendance modérée</li>
+                    <li>VFI <strong>&gt; 60%</strong> : dépendance forte aux transferts</li>
+                </ul>
+                Une relation inverse a été établie entre VFI et soutenabilité de la dette : plus une région dépend des transferts, plus sa notation de crédit est faible.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">3</span>Structure de la dette<small>Instruments</small></h2>
+            <div class="methodology-block">
+                <h3>💼 Composition</h3>
+                La dette régionale russe est structurée en quatre instruments principaux :
+                <ul>
+                    <li><strong>ОФЗ / Obligations</strong> — dette de marché, taux variables</li>
+                    <li><strong>Crédits bancaires commerciaux</strong> — taux plus élevés</li>
+                    <li><strong>Prêts budgétaires</strong> — les moins risqués, taux subventionnés</li>
+                    <li><strong>Garanties</strong> — engagements conditionnels</li>
+                </ul>
+                Une région avec une forte proportion de crédits bancaires est plus vulnérable aux chocs de taux qu'une région financée majoritairement par des prêts budgétaires.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">4</span>Sources de données<small>Open data</small></h2>
+            <div class="methodology-block">
+                <h3>📊 Sources officielles</h3>
+                <ul>
+                    <li><strong>Roskazna</strong> — Trésor fédéral, exécution budgétaire</li>
+                    <li><strong>Minfin Russia</strong> — dette publique régionale</li>
+                    <li><strong>ACRA Ratings</strong> — notations et structure des recettes</li>
+                    <li><strong>Banque de Russie WP 138</strong> — multiplicateurs budgétaires</li>
+                    <li><strong>ЕМИСС / fedstat.ru</strong> — recettes des budgets consolidés</li>
+                    <li><strong>HSE</strong> — recherche académique sur la convergence spatiale</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="num">5</span>Références académiques<small>Bibliographie</small></h2>
+            <div class="methodology-block">
+                <ul>
+                    <li><strong>Domar, E. D.</strong> (1944), <em>The "Burden of the Debt" and the National Income</em>, AER</li>
+                    <li><strong>Blanchard, O.</strong> (2019), <em>Public Debt and Low Interest Rates</em>, AER</li>
+                    <li><strong>FMI</strong> (2022), <em>Staff Guidance Note on the Sovereign Risk and Debt Sustainability Framework</em></li>
+                    <li><strong>Banque de Russie</strong> (2024), <em>Regional finance and fiscal regulation</em>, WP 138</li>
+                    <li><strong>Timushev & Mikhaylova</strong> (2023), <em>VFI as a tool for analyzing debt sustainability</em></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== TAB 7 : CLASSROOM ===================== -->
+    <div class="tab-panel" id="tab-class">
+        <div class="section">
+            <h2><span class="num">1</span>Exercices guidés<small>Pour étudiants en économie</small></h2>
+
+            <div class="exercise">
+                <h4>🎯 Exercice 1 — Comprendre le VFI</h4>
+                <ol>
+                    <li>Allez dans l'onglet <strong>Comparaison</strong></li>
+                    <li>Sélectionnez les régions du Caucase Nord : <em>Daghestan, Tchétchénie, Ingouchie</em></li>
+                    <li>Dans le tableau, observez leur <strong>VFI</strong> (colonne avant-dernière)</li>
+                    <li>Comparez avec Moscou et Saint-Pétersbourg</li>
+                </ol>
+                <div class="hint">
+                    💡 <strong>Question :</strong> Quelle est la principale source de recettes des régions du Caucase ? Comment cela affecte-t-il leur soutenabilité ?
+                </div>
+            </div>
+
+            <div class="exercise">
+                <h4>📈 Exercice 2 — Effet boule de neige</h4>
+                <ol>
+                    <li>Allez dans l'onglet <strong>Soutenabilité</strong></li>
+                    <li>Réglez r − g à <strong>+1 point</strong> (scénario pessimiste)</li>
+                    <li>Réglez r − g à <strong>−1 point</strong> (scénario optimiste)</li>
+                    <li>Comparez les soldes stabilisants pb* dans les deux cas</li>
+                </ol>
+                <div class="hint">
+                    💡 <strong>Question :</strong> Pourquoi un écart r − g négatif permet-il de stabiliser la dette avec un solde primaire plus faible ?
+                </div>
+            </div>
+
+            <div class="exercise">
+                <h4>🏗️ Exercice 3 — Comparaison de clusters</h4>
+                <ol>
+                    <li>Allez dans l'onglet <strong>Comparaison → Clusters</strong></li>
+                    <li>Observez les 4 groupes identifiés automatiquement</li>
+                    <li>Lequel regroupe les régions les plus autonomes ?</li>
+                    <li>Lequel regroupe les régions les plus dépendantes ?</li>
+                </ol>
+                <div class="hint">
+                    💡 <strong>Question :</strong> Les régions donatrices sont-elles plus endettées que les régions bénéficiaires ? Pourquoi ?
+                </div>
+            </div>
+
+            <div class="exercise">
+                <h4>💼 Exercice 4 — Structure de la dette</h4>
+                <ol>
+                    <li>Allez dans l'onglet <strong>Comparaison → Structure dette</strong></li>
+                    <li>Sélectionnez 5 régions aux profils différents</li>
+                    <li>Comparez la proportion ОФЗ / crédits bancaires / prêts budgétaires</li>
+                </ol>
+                <div class="hint">
+                    💡 <strong>Question :</strong> Une région qui finance sa dette à 60% par crédits bancaires commerciaux est-elle plus vulnérable qu'une région avec 60% de prêts budgétaires ? Pourquoi ?
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <span>Sources : <strong>Roskazna</strong> · <strong>Minfin</strong> · <strong>ACRA</strong> · <strong>Banque de Russie WP 138</strong> · <strong>HSE</strong></span>
+        <span>Dashboard académique · 89 sujets fédéraux · 2020-2025</span>
+    </footer>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const DISTRICTS = {
+    'CFO': 'Central', 'SZFO': 'Nord-Ouest', 'YFO': 'Sud', 'SKFO': 'Caucase Nord',
+    'PFO': 'Volga', 'UFO': 'Oural', 'SFO': 'Sibérie', 'DFO': 'Extrême-Orient', 'NEW': 'Nouveaux territoires'
+};
+const DISTRICT_COLORS = {
+    'CFO': '#0055A4', 'SZFO': '#10B981', 'YFO': '#F59E0B', 'SKFO': '#EF4135',
+    'PFO': '#8B5CF6', 'UFO': '#EC4899', 'SFO': '#06B6D4', 'DFO': '#F97316', 'NEW': '#7F1D1D'
+};
+
+// ============================================================
+// DONNÉES — 89 régions
+// ============================================================
+const REGIONS = [
+    // CENTRAL
+    { name: 'Moscou', district: 'CFO', grp: 26500, pop: 13000, rev2025: 4360, exp2025: 4590, debt: 184, vfi: 8, sustain: 95, donator: true, instruments: { ofz: 70, bank: 5, budget: 20, guarantee: 5 } },
+    { name: 'Moscou Oblast', district: 'CFO', grp: 8100, pop: 8600, rev2025: 985, exp2025: 1030, debt: 310, vfi: 15, sustain: 88, donator: true, instruments: { ofz: 55, bank: 25, budget: 15, guarantee: 5 } },
+    { name: 'Belgorod', district: 'CFO', grp: 1120, pop: 1540, rev2025: 165, exp2025: 195, debt: 62, vfi: 25, sustain: 72, donator: false, instruments: { ofz: 40, bank: 20, budget: 35, guarantee: 5 } },
+    { name: 'Bryansk', district: 'CFO', grp: 420, pop: 1160, rev2025: 85, exp2025: 92, debt: 25, vfi: 45, sustain: 62, donator: false, instruments: { ofz: 30, bank: 20, budget: 45, guarantee: 5 } },
+    { name: 'Vladimir', district: 'CFO', grp: 710, pop: 1330, rev2025: 105, exp2025: 115, debt: 38, vfi: 32, sustain: 70, donator: false, instruments: { ofz: 45, bank: 20, budget: 30, guarantee: 5 } },
+    { name: 'Voronezh', district: 'CFO', grp: 1250, pop: 2280, rev2025: 195, exp2025: 210, debt: 68, vfi: 28, sustain: 75, donator: false, instruments: { ofz: 50, bank: 20, budget: 25, guarantee: 5 } },
+    { name: 'Ivanovo', district: 'CFO', grp: 340, pop: 900, rev2025: 62, exp2025: 70, debt: 22, vfi: 48, sustain: 58, donator: false, instruments: { ofz: 30, bank: 15, budget: 50, guarantee: 5 } },
+    { name: 'Kaluga', district: 'CFO', grp: 610, pop: 1000, rev2025: 88, exp2025: 95, debt: 32, vfi: 22, sustain: 78, donator: false, instruments: { ofz: 55, bank: 20, budget: 20, guarantee: 5 } },
+    { name: 'Kostroma', district: 'CFO', grp: 260, pop: 590, rev2025: 52, exp2025: 58, debt: 18, vfi: 52, sustain: 55, donator: false, instruments: { ofz: 25, bank: 20, budget: 50, guarantee: 5 } },
+    { name: 'Kursk', district: 'CFO', grp: 580, pop: 1080, rev2025: 92, exp2025: 105, debt: 28, vfi: 35, sustain: 68, donator: false, instruments: { ofz: 40, bank: 20, budget: 35, guarantee: 5 } },
+    { name: 'Lipetsk', district: 'CFO', grp: 720, pop: 1100, rev2025: 108, exp2025: 112, debt: 30, vfi: 25, sustain: 76, donator: false, instruments: { ofz: 50, bank: 20, budget: 25, guarantee: 5 } },
+    { name: 'Orel', district: 'CFO', grp: 320, pop: 700, rev2025: 55, exp2025: 62, debt: 20, vfi: 48, sustain: 58, donator: false, instruments: { ofz: 30, bank: 15, budget: 50, guarantee: 5 } },
+    { name: 'Ryazan', district: 'CFO', grp: 530, pop: 1080, rev2025: 88, exp2025: 95, debt: 28, vfi: 38, sustain: 66, donator: false, instruments: { ofz: 40, bank: 20, budget: 35, guarantee: 5 } },
+    { name: 'Smolensk', district: 'CFO', grp: 400, pop: 900, rev2025: 68, exp2025: 75, debt: 24, vfi: 42, sustain: 62, donator: false, instruments: { ofz: 35, bank: 15, budget: 45, guarantee: 5 } },
+    { name: 'Tambov', district: 'CFO', grp: 480, pop: 940, rev2025: 78, exp2025: 88, debt: 32, vfi: 45, sustain: 60, donator: false, instruments: { ofz: 30, bank: 20, budget: 45, guarantee: 5 } },
+    { name: 'Tver', district: 'CFO', grp: 530, pop: 1200, rev2025: 92, exp2025: 102, debt: 35, vfi: 38, sustain: 65, donator: false, instruments: { ofz: 40, bank: 20, budget: 35, guarantee: 5 } },
+    { name: 'Tula', district: 'CFO', grp: 830, pop: 1440, rev2025: 128, exp2025: 135, debt: 42, vfi: 28, sustain: 74, donator: false, instruments: { ofz: 45, bank: 25, budget: 25, guarantee: 5 } },
+    { name: 'Yaroslavl', district: 'CFO', grp: 690, pop: 1200, rev2025: 108, exp2025: 118, debt: 42, vfi: 32, sustain: 72, donator: false, instruments: { ofz: 45, bank: 20, budget: 30, guarantee: 5 } },
+
+    // NORD-OUEST
+    { name: 'Saint-Pétersbourg', district: 'SZFO', grp: 9700, pop: 5600, rev2025: 1250, exp2025: 1320, debt: 85, vfi: 15, sustain: 90, donator: true, instruments: { ofz: 60, bank: 20, budget: 15, guarantee: 5 } },
+    { name: 'Leningrad Oblast', district: 'SZFO', grp: 1350, pop: 1900, rev2025: 205, exp2025: 220, debt: 48, vfi: 22, sustain: 80, donator: false, instruments: { ofz: 50, bank: 25, budget: 20, guarantee: 5 } },
+    { name: 'Arkhangelsk', district: 'SZFO', grp: 620, pop: 1100, rev2025: 105, exp2025: 115, debt: 42, vfi: 35, sustain: 70, donator: false, instruments: { ofz: 45, bank: 20, budget: 30, guarantee: 5 } },
+    { name: 'Vologda', district: 'SZFO', grp: 710, pop: 1140, rev2025: 118, exp2025: 128, debt: 52, vfi: 28, sustain: 72, donator: false, instruments: { ofz: 50, bank: 20, budget: 25, guarantee: 5 } },
+    { name: 'Kaliningrad', district: 'SZFO', grp: 700, pop: 1030, rev2025: 108, exp2025: 118, debt: 42, vfi: 32, sustain: 72, donator: false, instruments: { ofz: 45, bank: 25, budget: 25, guarantee: 5 } },
+    { name: 'Karelia', district: 'SZFO', grp: 380, pop: 530, rev2025: 68, exp2025: 78, debt: 32, vfi: 48, sustain: 58, donator: false, instruments: { ofz: 30, bank: 20, budget: 45, guarantee: 5 } },
+    { name: 'Komi', district: 'SZFO', grp: 760, pop: 780, rev2025: 118, exp2025: 130, debt: 55, vfi: 25, sustain: 75, donator: true, instruments: { ofz: 50, bank: 20, budget: 25, guarantee: 5 } },
+    { name: 'Murmansk', district: 'SZFO', grp: 820, pop: 680, rev2025: 128, exp2025: 140, debt: 55, vfi: 20, sustain: 78, donator: true, instruments: { ofz: 55, bank: 20, budget: 20, guarantee: 5 } },
+    { name: 'Novgorod', district: 'SZFO', grp: 290, pop: 580, rev2025: 52, exp2025: 58, debt: 22, vfi: 45, sustain: 60, donator: false, instruments: { ofz: 35, bank: 15, budget: 45, guarantee: 5 } },
+    { name: 'Pskov', district: 'SZFO', grp: 220, pop: 590, rev2025: 42, exp2025: 48, debt: 20, vfi: 52, sustain: 55, donator: false, instruments: { ofz: 25, bank: 15, budget: 55, guarantee: 5 } },
+    { name: 'Nenets AO', district: 'SZFO', grp: 380, pop: 42, rev2025: 55, exp2025: 60, debt: 12, vfi: 15, sustain: 85, donator: true, instruments: { ofz: 40, bank: 10, budget: 45, guarantee: 5 } },
+
+    // SUD
+    { name: 'Krasnodar', district: 'YFO', grp: 3400, pop: 5800, rev2025: 480, exp2025: 510, debt: 110, vfi: 32, sustain: 72, donator: false, instruments: { ofz: 55, bank: 30, budget: 10, guarantee: 5 } },
+    { name: 'Rostov', district: 'YFO', grp: 2100, pop: 4200, rev2025: 295, exp2025: 315, debt: 88, vfi: 28, sustain: 74, donator: false, instruments: { ofz: 50, bank: 25, budget: 20, guarantee: 5 } },
+    { name: 'Volgograd', district: 'YFO', grp: 1100, pop: 2480, rev2025: 165, exp2025: 180, debt: 58, vfi: 35, sustain: 68, donator: false, instruments: { ofz: 45, bank: 25, budget: 25, guarantee: 5 } },
+    { name: 'Astrakhan', district: 'YFO', grp: 610, pop: 960, rev2025: 95, exp2025: 105, debt: 32, vfi: 42, sustain: 62, donator: false, instruments: { ofz: 35, bank: 20, budget: 40, guarantee: 5 } },
+    { name: 'Adygea', district: 'YFO', grp: 180, pop: 500, rev2025: 32, exp2025: 38, debt: 15, vfi: 55, sustain: 55, donator: false, instruments: { ofz: 25, bank: 15, budget: 55, guarantee: 5 } },
+    { name: 'Kalmykia', district: 'YFO', grp: 105, pop: 270, rev2025: 22, exp2025: 28, debt: 12, vfi: 65, sustain: 45, donator: false, instruments: { ofz: 15, bank: 10, budget: 70, guarantee: 5 } },
+    { name: 'Crimea', district: 'YFO', grp: 510, pop: 2400, rev2025: 95, exp2025: 118, debt: 25, vfi: 68, sustain: 42, donator: false, instruments: { ofz: 10, bank: 5, budget: 80, guarantee: 5 } },
+    { name: 'Sebastopol', district: 'YFO', grp: 180, pop: 550, rev2025: 32, exp2025: 42, debt: 8, vfi: 72, sustain: 40, donator: false, instruments: { ofz: 5, bank: 5, budget: 85, guarantee: 5 } },
+
+    // CAUCASE NORD
+    { name: 'Stavropol', district: 'SKFO', grp: 900, pop: 2900, rev2025: 145, exp2025: 160, debt: 45, vfi: 45, sustain: 58, donator: false, instruments: { ofz: 35, bank: 20, budget: 40, guarantee: 5 } },
+    { name: 'Daghestan', district: 'SKFO', grp: 950, pop: 3200, rev2025: 180, exp2025: 220, debt: 35, vfi: 78, sustain: 35, donator: false, instruments: { ofz: 15, bank: 10, budget: 70, guarantee: 5 } },
+    { name: 'Chechnya', district: 'SKFO', grp: 400, pop: 1530, rev2025: 120, exp2025: 165, debt: 28, vfi: 85, sustain: 28, donator: false, instruments: { ofz: 5, bank: 5, budget: 85, guarantee: 5 } },
+    { name: 'Kabardino-Balkaria', district: 'SKFO', grp: 220, pop: 870, rev2025: 45, exp2025: 58, debt: 18, vfi: 68, sustain: 42, donator: false, instruments: { ofz: 20, bank: 10, budget: 65, guarantee: 5 } },
+    { name: 'Karachay-Cherkessia', district: 'SKFO', grp: 130, pop: 470, rev2025: 28, exp2025: 38, debt: 12, vfi: 72, sustain: 38, donator: false, instruments: { ofz: 15, bank: 10, budget: 70, guarantee: 5 } },
+    { name: 'North Ossetia', district: 'SKFO', grp: 230, pop: 690, rev2025: 48, exp2025: 60, debt: 20, vfi: 62, sustain: 48, donator: false, instruments: { ofz: 25, bank: 15, budget: 55, guarantee: 5 } },
+    { name: 'Ingushetia', district: 'SKFO', grp: 65, pop: 520, rev2025: 45, exp2025: 68, debt: 12, vfi: 92, sustain: 22, donator: false, instruments: { ofz: 5, bank: 3, budget: 87, guarantee: 5 } },
+
+    // VOLGA
+    { name: 'Tatarstan', district: 'PFO', grp: 4200, pop: 3900, rev2025: 420, exp2025: 440, debt: 99, vfi: 25, sustain: 80, donator: true, instruments: { ofz: 55, bank: 25, budget: 15, guarantee: 5 } },
+    { name: 'Bashkortostan', district: 'PFO', grp: 2300, pop: 4100, rev2025: 265, exp2025: 285, debt: 72, vfi: 30, sustain: 74, donator: false, instruments: { ofz: 50, bank: 25, budget: 20, guarantee: 5 } },
+    { name: 'Samara', district: 'PFO', grp: 1850, pop: 3180, rev2025: 235, exp2025: 255, debt: 78, vfi: 28, sustain: 74, donator: false, instruments: { ofz: 50, bank: 25, budget: 20, guarantee: 5 } },
+    { name: 'Nizhny Novgorod', district: 'PFO', grp: 2000, pop: 3200, rev2025: 265, exp2025: 290, debt: 95, vfi: 25, sustain: 76, donator: false, instruments: { ofz: 55, bank: 25, budget: 15, guarantee: 5 } },
+    { name: 'Perm', district: 'PFO', grp: 1700, pop: 2600, rev2025: 215, exp2025: 235, debt: 72, vfi: 32, sustain: 72, donator: false, instruments: { ofz: 45, bank: 25, budget: 25, guarantee: 5 } },
+    { name: 'Saratov', district: 'PFO', grp: 1050, pop: 2380, rev2025: 155, exp2025: 175, debt: 52, vfi: 38, sustain: 66, donator: false, instruments: { ofz: 40, bank: 20, budget: 35, guarantee: 5 } },
+    { name: 'Orenburg', district: 'PFO', grp: 1350, pop: 1950, rev2025: 178, exp2025: 195, debt: 55, vfi: 32, sustain: 70, donator: false, instruments: { ofz: 45, bank: 25, budget: 25, guarantee: 5 } },
+    { name: 'Ulyanovsk', district: 'PFO', grp: 610, pop: 1200, rev2025: 92, exp2025: 105, debt: 32, vfi: 42, sustain: 62, donator: false, instruments: { ofz: 35, bank: 20, budget: 40, guarantee: 5 } },
+    { name: 'Penza', district: 'PFO', grp: 500, pop: 1280, rev2025: 78, exp2025: 88, debt: 28, vfi: 45, sustain: 60, donator: false, instruments: { ofz: 30, bank: 20, budget: 45, guarantee: 5 } },
+    { name: 'Kirov', district: 'PFO', grp: 400, pop: 1250, rev2025: 68, exp2025: 78, debt: 28, vfi: 48, sustain: 58, donator: false, instruments: { ofz: 30, bank: 15, budget: 50, guarantee: 5 } },
+    { name: 'Chuvashia', district: 'PFO', grp: 320, pop: 1200, rev2025: 58, exp2025: 68, debt: 25, vfi: 52, sustain: 55, donator: false, instruments: { ofz: 30, bank: 15, budget: 50, guarantee: 5 } },
+    { name: 'Mordovia', district: 'PFO', grp: 290, pop: 790, rev2025: 52, exp2025: 60, debt: 22, vfi: 55, sustain: 52, donator: false, instruments: { ofz: 25, bank: 15, budget: 55, guarantee: 5 } },
+    { name: 'Mari El', district: 'PFO', grp: 230, pop: 680, rev2025: 42, exp2025: 52, debt: 18, vfi: 58, sustain: 50, donator: false, instruments: { ofz: 25, bank: 15, budget: 55, guarantee: 5 } },
+    { name: 'Udmurtia', district: 'PFO', grp: 700, pop: 1500, rev2025: 105, exp2025: 118, debt: 42, vfi: 35, sustain: 68, donator: false, instruments: { ofz: 45, bank: 20, budget: 30, guarantee: 5 } },
+
+    // OURAL
+    { name: 'Sverdlovsk', district: 'UFO', grp: 2800, pop: 4260, rev2025: 350, exp2025: 380, debt: 95, vfi: 45, sustain: 66, donator: false, instruments: { ofz: 45, bank: 25, budget: 25, guarantee: 5 } },
+    { name: 'Chelyabinsk', district: 'UFO', grp: 2100, pop: 3400, rev2025: 265, exp2025: 288, debt: 78, vfi: 32, sustain: 72, donator: false, instruments: { ofz: 50, bank: 25, budget: 20, guarantee: 5 } },
+    { name: 'Tyumen', district: 'UFO', grp: 1550, pop: 1550, rev2025: 285, exp2025: 295, debt: 45, vfi: 12, sustain: 88, donator: true, instruments: { ofz: 60, bank: 20, budget: 15, guarantee: 5 } },
+    { name: 'Khanty-Mansi AO', district: 'UFO', grp: 5100, pop: 1700, rev2025: 385, exp2025: 400, debt: 42, vfi: 8, sustain: 90, donator: true, instruments: { ofz: 55, bank: 15, budget: 25, guarantee: 5 } },
+    { name: 'Yamalo-Nenets AO', district: 'UFO', grp: 4200, pop: 550, rev2025: 355, exp2025: 375, debt: 32, vfi: 6, sustain: 92, donator: true, instruments: { ofz: 50, bank: 10, budget: 35, guarantee: 5 } },
+    { name: 'Kurgan', district: 'UFO', grp: 290, pop: 780, rev2025: 48, exp2025: 58, debt: 22, vfi: 55, sustain: 52, donator: false, instruments: { ofz: 25, bank: 15, budget: 55, guarantee: 5 } },
+
+    // SIBÉRIE
+    { name: 'Novosibirsk', district: 'SFO', grp: 1800, pop: 2800, rev2025: 235, exp2025: 255, debt: 72, vfi: 32, sustain: 70, donator: false, instruments: { ofz: 50, bank: 25, budget: 20, guarantee: 5 } },
+    { name: 'Krasnoyarsk', district: 'SFO', grp: 3200, pop: 2900, rev2025: 355, exp2025: 375, debt: 88, vfi: 22, sustain: 78, donator: false, instruments: { ofz: 55, bank: 25, budget: 15, guarantee: 5 } },
+    { name: 'Kemerovo', district: 'SFO', grp: 1500, pop: 2580, rev2025: 205, exp2025: 230, debt: 105, vfi: 28, sustain: 62, donator: false, instruments: { ofz: 45, bank: 30, budget: 20, guarantee: 5 } },
+    { name: 'Irkutsk', district: 'SFO', grp: 1800, pop: 2350, rev2025: 235, exp2025: 255, debt: 68, vfi: 25, sustain: 74, donator: false, instruments: { ofz: 50, bank: 25, budget: 20, guarantee: 5 } },
+    { name: 'Omsk', district: 'SFO', grp: 800, pop: 1850, rev2025: 118, exp2025: 132, debt: 42, vfi: 42, sustain: 62, donator: false, instruments: { ofz: 40, bank: 20, budget: 35, guarantee: 5 } },
+    { name: 'Altai Krai', district: 'SFO', grp: 650, pop: 2200, rev2025: 105, exp2025: 122, debt: 38, vfi: 45, sustain: 60, donator: false, instruments: { ofz: 35, bank: 20, budget: 40, guarantee: 5 } },
+    { name: 'Tomsk', district: 'SFO', grp: 750, pop: 1050, rev2025: 108, exp2025: 122, debt: 42, vfi: 32, sustain: 70, donator: false, instruments: { ofz: 45, bank: 20, budget: 30, guarantee: 5 } },
+    { name: 'Tyva', district: 'SFO', grp: 100, pop: 340, rev2025: 35, exp2025: 48, debt: 12, vfi: 72, sustain: 38, donator: false, instruments: { ofz: 15, bank: 10, budget: 70, guarantee: 5 } },
+    { name: 'Khakassia', district: 'SFO', grp: 290, pop: 530, rev2025: 52, exp2025: 62, debt: 22, vfi: 48, sustain: 58, donator: false, instruments: { ofz: 30, bank: 15, budget: 50, guarantee: 5 } },
+    { name: 'Altai Republic', district: 'SFO', grp: 80, pop: 220, rev2025: 25, exp2025: 35, debt: 8, vfi: 68, sustain: 42, donator: false, instruments: { ofz: 15, bank: 10, budget: 70, guarantee: 5 } },
+
+    // EXTRÊME-ORIENT
+    { name: 'Primorsky', district: 'DFO', grp: 1300, pop: 1850, rev2025: 178, exp2025: 195, debt: 55, vfi: 32, sustain: 68, donator: false, instruments: { ofz: 45, bank: 25, budget: 25, guarantee: 5 } },
+    { name: 'Khabarovsk', district: 'DFO', grp: 1200, pop: 1280, rev2025: 165, exp2025: 182, debt: 55, vfi: 28, sustain: 72, donator: false, instruments: { ofz: 50, bank: 25, budget: 20, guarantee: 5 } },
+    { name: 'Sakha (Yakutia)', district: 'DFO', grp: 1650, pop: 1000, rev2025: 225, exp2025: 245, debt: 62, vfi: 25, sustain: 72, donator: true, instruments: { ofz: 50, bank: 20, budget: 25, guarantee: 5 } },
+    { name: 'Amur', district: 'DFO', grp: 550, pop: 780, rev2025: 88, exp2025: 102, debt: 32, vfi: 42, sustain: 62, donator: false, instruments: { ofz: 40, bank: 20, budget: 35, guarantee: 5 } },
+    { name: 'Sakhalin', district: 'DFO', grp: 1400, pop: 480, rev2025: 185, exp2025: 195, debt: 32, vfi: 12, sustain: 88, donator: true, instruments: { ofz: 55, bank: 15, budget: 25, guarantee: 5 } },
+    { name: 'Buryatia', district: 'DFO', grp: 380, pop: 980, rev2025: 68, exp2025: 80, debt: 25, vfi: 55, sustain: 52, donator: false, instruments: { ofz: 30, bank: 15, budget: 50, guarantee: 5 } },
+    { name: 'Zabaykalsky', district: 'DFO', grp: 400, pop: 1000, rev2025: 72, exp2025: 85, debt: 28, vfi: 52, sustain: 54, donator: false, instruments: { ofz: 30, bank: 15, budget: 50, guarantee: 5 } },
+    { name: 'Kamchatka', district: 'DFO', grp: 350, pop: 290, rev2025: 62, exp2025: 72, debt: 22, vfi: 45, sustain: 60, donator: false, instruments: { ofz: 35, bank: 20, budget: 40, guarantee: 5 } },
+    { name: 'Magadan', district: 'DFO', grp: 340, pop: 135, rev2025: 55, exp2025: 65, debt: 18, vfi: 35, sustain: 68, donator: false, instruments: { ofz: 40, bank: 20, budget: 35, guarantee: 5 } },
+    { name: 'Jewish AO', district: 'DFO', grp: 85, pop: 155, rev2025: 18, exp2025: 25, debt: 8, vfi: 62, sustain: 45, donator: false, instruments: { ofz: 20, bank: 10, budget: 65, guarantee: 5 } },
+    { name: 'Chukotka', district: 'DFO', grp: 220, pop: 50, rev2025: 42, exp2025: 52, debt: 8, vfi: 22, sustain: 78, donator: false, instruments: { ofz: 35, bank: 15, budget: 45, guarantee: 5 } },
+
+    // NOUVEAUX TERRITOIRES
+    { name: 'Donetsk (DNR)', district: 'NEW', grp: 350, pop: 2200, rev2025: 155, exp2025: 265, debt: 32, vfi: 88, sustain: 25, donator: false, instruments: { ofz: 5, bank: 3, budget: 87, guarantee: 5 } },
+    { name: 'Lougansk (LNR)', district: 'NEW', grp: 200, pop: 1400, rev2025: 105, exp2025: 195, debt: 22, vfi: 92, sustain: 20, donator: false, instruments: { ofz: 3, bank: 2, budget: 90, guarantee: 5 } },
+    { name: 'Zaporijjia', district: 'NEW', grp: 320, pop: 1650, rev2025: 135, exp2025: 225, debt: 25, vfi: 85, sustain: 28, donator: false, instruments: { ofz: 5, bank: 3, budget: 87, guarantee: 5 } },
+    { name: 'Kherson', district: 'NEW', grp: 200, pop: 1050, rev2025: 85, exp2025: 165, debt: 18, vfi: 88, sustain: 24, donator: false, instruments: { ofz: 3, bank: 2, budget: 90, guarantee: 5 } }
+];
+
+// Données historiques macro-consolidées
+const HISTORICAL = {
+    years: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    revenues: [10438, 10990, 11946, 13499, 14342, 15693, 17546, 19677, 22325, 24622, 25858],
+    expenditures: [10460, 11122, 12108, 13410, 14633, 17029, 16886, 19626, 22525, 24919, 27397],
+    debt: [2327, 2353, 2255, 2218, 2170, 2492, 2832, 3165, 3619, 3528, 3481]
+};
+
+// Événements historiques
+const HIST_EVENTS = [
+    { year: '2014', event: 'Sanctions post-Crimée', desc: 'Premières sanctions occidentales après l\'annexion. Impact sur les régions frontalières.' },
+    { year: '2015', event: 'Choc pétrolier', desc: 'Effondrement du prix du baril. Les régions pétrolières réduisent leurs transferts.' },
+    { year: '2018', event: 'Réforme des pensions', desc: 'Impacts budgétaires régionaux et transferts sociaux ajustés.' },
+    { year: '2020', event: 'COVID-19', desc: 'Explosion des déficits régionaux. Transferts fédéraux exceptionnels.' },
+    { year: '2022', event: 'Invasion de l\'Ukraine', desc: 'Militarisation budgétaire massive. Sanctions renforcées. Rupture des chaînes logistiques.' },
+    { year: '2023-24', event: 'Boom des dépenses militaires', desc: 'Les régions industrielles bénéficient de la production militaire, les régions frontalières subissent.' },
+    { year: '2025', event: 'Déficits records', desc: '74 régions sur 89 en déficit. Déficit consolidé de 1 538 Md₽ (×5,2 vs 2024).' }
+];
+
+// Clusters prédéfinis (calculés hors ligne par k-means sur les indicateurs)
+const CLUSTERS = {
+    'Leaders autonomes': { regions: ['Moscou', 'Saint-Pétersbourg', 'Tatarstan', 'Tyumen', 'Khanty-Mansi AO', 'Yamalo-Nenets AO', 'Sakhalin'], color: '#10B981' },
+    'Industrielles robustes': { regions: ['Sverdlovsk', 'Chelyabinsk', 'Krasnoyarsk', 'Kemerovo', 'Irkutsk', 'Perm', 'Samara', 'Bashkortostan'], color: '#0055A4' },
+    'En transition': { regions: ['Krasnodar', 'Rostov', 'Nizhny Novgorod', 'Novosibirsk', 'Voronezh', 'Volgograd', 'Orenburg', 'Primorsky', 'Khabarovsk'], color: '#F59E0B' },
+    'Dépendantes': { regions: ['Daghestan', 'Chechnya', 'Ingushetia', 'Tyva', 'Kalmykia', 'Kabardino-Balkaria', 'Karachay-Cherkessia', 'North Ossetia'], color: '#EF4135' },
+    'Nouveaux territoires': { regions: ['Donetsk (DNR)', 'Lougansk (LNR)', 'Zaporijjia', 'Kherson'], color: '#7F1D1D' }
+};
+
+// ============================================================
+// ÉTAT GLOBAL
+// ============================================================
+const state = {
+    year: 2025,
+    selected: new Set(['Moscou', 'Saint-Pétersbourg', 'Tatarstan', 'Daghestan', 'Chechnya', 'Sakhalin']),
+    filterDistrict: '',
+    searchQuery: '',
+    sortRegions: 'name',
+    tableSortKey: 'debt',
+    tableSortDir: 'desc',
+    activeMainTab: 'tab-overview',
+    activeSubTab: 'sub-bar',
+    theme: 'light',
+    charts: {}
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+const $ = id => document.getElementById(id);
+const fmt = (v, d = 0) => v.toLocaleString('fr-FR', { maximumFractionDigits: d, minimumFractionDigits: d });
+const fmtMoney = (v, d = 1) => fmt(v, d) + ' Md₽';
+const getSolde = r => r.rev2025 - r.exp2025;
+const getDebtRatio = r => (r.debt / r.grp) * 100;
+const getDebtRev = r => (r.debt / r.rev2025) * 100;
+const getSustainClass = s => s >= 75 ? 'pos' : s >= 50 ? 'warn' : 'neg';
+
+function destroyChart(key) {
+    if (state.charts[key]) { state.charts[key].destroy(); state.charts[key] = null; }
+}
+
+// Appliquer le thème
+function applyTheme() {
+    document.body.dataset.theme = state.theme;
+    Chart.defaults.color = state.theme === 'dark' ? '#CBD5E1' : '#334155';
+    Chart.defaults.borderColor = state.theme === 'dark' ? 'rgba(148,163,184,0.15)' : 'rgba(226,232,240,0.6)';
+    $('themeBtn').textContent = state.theme === 'dark' ? '☀️' : '🌙';
+}
+
+// ============================================================
+// KPI
+// ============================================================
+function renderKPIs() {
+    const totalRev = REGIONS.reduce((a, r) => a + r.rev2025, 0);
+    const totalExp = REGIONS.reduce((a, r) => a + r.exp2025, 0);
+    const totalDebt = REGIONS.reduce((a, r) => a + r.debt, 0);
+    const deficitCount = REGIONS.filter(r => getSolde(r) < 0).length;
+    const donators = REGIONS.filter(r => r.donator).length;
+    const avgVfi = REGIONS.reduce((a, r) => a + r.vfi, 0) / REGIONS.length;
+    const avgSustain = REGIONS.reduce((a, r) => a + r.sustain, 0) / REGIONS.length;
+
+    $('kpiGrid').innerHTML = `
+        <div class="kpi warn"><div class="label">Recettes totales</div><div class="val">${fmtMoney(totalRev)}</div><div class="sub">89 régions consolidées</div></div>
+        <div class="kpi bad"><div class="label">Dépenses totales</div><div class="val">${fmtMoney(totalExp)}</div><div class="sub">89 régions consolidées</div></div>
+        <div class="kpi bad"><div class="label">Solde consolidé</div><div class="val">${fmtMoney(totalRev - totalExp)}</div><div class="sub">Déficit global</div></div>
+        <div class="kpi bad"><div class="label">Dette totale</div><div class="val">${fmtMoney(totalDebt)}</div><div class="sub">Encours des 89 régions</div></div>
+        <div class="kpi bad"><div class="label">Régions déficitaires</div><div class="val">${deficitCount} / 89</div><div class="sub">${(deficitCount / 89 * 100).toFixed(0)}% du total</div></div>
+        <div class="kpi warn"><div class="label">Régions donatrices</div><div class="val">${donators} / 89</div><div class="sub">${(donators / 89 * 100).toFixed(0)}% du total</div></div>
+        <div class="kpi warn"><div class="label">VFI moyen</div><div class="val">${avgVfi.toFixed(1)}%</div><div class="sub">Dépendance aux transferts</div></div>
+        <div class="kpi ${avgSustain > 60 ? 'good' : 'warn'}"><div class="label">Soutenabilité moyenne</div><div class="val">${avgSustain.toFixed(0)}/100</div><div class="sub">Indice composite</div></div>
+    `;
+}
+
+// ============================================================
+// ÉVOLUTION HISTORIQUE
+// ============================================================
+function renderOverviewEvolution() {
+    destroyChart('overviewEvolution');
+    const dark = state.theme === 'dark';
+
+    state.charts.overviewEvolution = new Chart($('overviewEvolution'), {
+        type: 'line',
+        data: {
+            labels: HISTORICAL.years,
+            datasets: [
+                {
+                    label: 'Recettes (Md₽)',
+                    data: HISTORICAL.revenues,
+                    borderColor: '#0055A4',
+                    backgroundColor: 'rgba(0,85,164,0.08)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5
+                },
+                {
+                    label: 'Dépenses (Md₽)',
+                    data: HISTORICAL.expenditures,
+                    borderColor: '#EF4135',
+                    backgroundColor: 'rgba(239,65,53,0.08)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5
+                },
+                {
+                    label: 'Dette (Md₽)',
+                    data: HISTORICAL.debt,
+                    borderColor: '#F59E0B',
+                    borderWidth: 2.5,
+                    borderDash: [6, 4],
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 11 }, usePointStyle: true, padding: 12 } },
+                annotation: {
+                    annotations: {
+                        crimee: { type: 'line', xMin: 2014, xMax: 2014, borderColor: 'rgba(239,65,53,0.5)', borderWidth: 2, borderDash: [4, 4], label: { display: true, content: 'Crimée', position: 'start', backgroundColor: 'rgba(239,65,53,0.85)', color: 'white', font: { size: 9, weight: 'bold' }, padding: 3 } },
+                        covid: { type: 'line', xMin: 2020, xMax: 2020, borderColor: 'rgba(245,158,11,0.5)', borderWidth: 2, borderDash: [4, 4], label: { display: true, content: 'COVID', position: 'start', backgroundColor: 'rgba(245,158,11,0.85)', color: 'white', font: { size: 9, weight: 'bold' }, padding: 3 } },
+                        guerre: { type: 'line', xMin: 2022, xMax: 2022, borderColor: 'rgba(127,29,29,0.6)', borderWidth: 2, borderDash: [4, 4], label: { display: true, content: '2022', position: 'start', backgroundColor: 'rgba(127,29,29,0.85)', color: 'white', font: { size: 9, weight: 'bold' }, padding: 3 } }
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: false, ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v } }
+            }
+        }
+    });
+}
+
+// ============================================================
+// TOP 10 DETTE
+// ============================================================
+function renderTopDebt() {
+    destroyChart('topDebt');
+    const top = [...REGIONS].sort((a, b) => b.debt - a.debt).slice(0, 10);
+
+    state.charts.topDebt = new Chart($('topDebtChart'), {
+        type: 'bar',
+        data: {
+            labels: top.map(r => r.name),
+            datasets: [{
+                label: 'Dette (Md₽)',
+                data: top.map(r => r.debt),
+                backgroundColor: top.map(r => DISTRICT_COLORS[r.district] + 'CC'),
+                borderRadius: 5
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => fmt(ctx.parsed.x, 1) + ' Md₽' } }
+            },
+            scales: { x: { beginAtZero: true, ticks: { callback: v => v + ' Md₽' } } }
+        }
+    });
+}
+
+// ============================================================
+// HISTORIQUE
+// ============================================================
+function renderHistory() {
+    $('historyGrid').innerHTML = HIST_EVENTS.map(e => `
+        <div class="history-card">
+            <div class="year">${e.year}</div>
+            <div class="event">${e.event}</div>
+            <div class="desc">${e.desc}</div>
+        </div>
+    `).join('');
+}
+
+// ============================================================
+// DISTRICTS FILTER
+// ============================================================
+function initDistrictFilter() {
+    const sel = $('filterDistrict');
+    sel.innerHTML = '<option value="">Tous (89)</option>';
+    Object.entries(DISTRICTS).forEach(([code, name]) => {
+        const count = REGIONS.filter(r => r.district === code).length;
+        if (count === 0) return;
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = `${name} (${count})`;
+        sel.appendChild(opt);
+    });
+}
+
+// ============================================================
+// REGION GRID
+// ============================================================
+function getFilteredRegions() {
+    let list = [...REGIONS];
+    if (state.filterDistrict) list = list.filter(r => r.district === state.filterDistrict);
+    if (state.searchQuery) list = list.filter(r => r.name.toLowerCase().includes(state.searchQuery));
+
+    const [key, dir] = state.sortRegions.includes('-') ? state.sortRegions.split('-') : [state.sortRegions, 'asc'];
+    list.sort((a, b) => {
+        let va, vb;
+        if (key === 'name') { va = a.name; vb = b.name; return dir === 'desc' ? vb.localeCompare(va) : va.localeCompare(vb); }
+        if (key === 'debt') { va = a.debt; vb = b.debt; }
+        else if (key === 'vfi') { va = a.vfi; vb = b.vfi; }
+        else if (key === 'grp') { va = a.grp; vb = b.grp; }
+        else if (key === 'sustain') { va = a.sustain; vb = b.sustain; }
+        else { va = a.name; vb = b.name; return 0; }
+        return dir === 'desc' ? vb - va : va - vb;
+    });
+    return list;
+}
+
+function renderRegionGrid() {
+    const list = getFilteredRegions();
+    const grid = $('regionGrid');
+    const atMax = state.selected.size >= 15;
+
+    grid.innerHTML = list.map(r => {
+        const isChecked = state.selected.has(r.name);
+        const isDisabled = !isChecked && atMax;
+        return `<label class="region-item ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}" data-region="${r.name.replace(/"/g, '&quot;')}">
+            <input type="checkbox" ${isChecked ? 'checked' : ''}>
+            <span class="region-name" title="${r.name}">${r.name}</span>
+            <span class="region-debt">${fmt(r.debt, 0)}</span>
+        </label>`;
+    }).join('');
+
+    grid.querySelectorAll('.region-item').forEach(item => {
+        item.addEventListener('click', e => {
+            e.preventDefault();
+            const name = item.dataset.region;
+            if (state.selected.has(name)) state.selected.delete(name);
+            else if (state.selected.size < 15) state.selected.add(name);
+            else return;
+            renderRegionGrid();
+            runAllCharts();
+        });
+    });
+    updateCounter();
+}
+
+function updateCounter() {
+    const c = $('counter');
+    const n = state.selected.size;
+    c.textContent = `${n} sélectionnée${n > 1 ? 's' : ''}`;
+    c.className = 'counter';
+    if (n === 0) c.classList.add('bad');
+    else if (n <= 6) c.classList.add('ok');
+    else if (n <= 10) c.classList.add('warn');
+    else c.classList.add('bad');
+}
+
+function getSelectedRegions() {
+    return [...state.selected].map(n => REGIONS.find(r => r.name === n)).filter(Boolean);
+}
+
+// ============================================================
+// CHARTS COMPARAISON
+// ============================================================
+function renderMultiBar() {
+    destroyChart('multibar');
+    const sel = getSelectedRegions();
+    if (!sel.length) return;
+    state.charts.multibar = new Chart($('multibarChart'), {
+        type: 'bar',
+        data: {
+            labels: sel.map(r => r.name),
+            datasets: [
+                { label: 'Recettes', data: sel.map(r => r.rev2025), backgroundColor: 'rgba(0,85,164,0.85)', borderRadius: 4 },
+                { label: 'Dépenses', data: sel.map(r => r.exp2025), backgroundColor: 'rgba(239,65,53,0.85)', borderRadius: 4 },
+                { label: 'Dette', data: sel.map(r => r.debt), backgroundColor: 'rgba(245,158,11,0.85)', borderRadius: 4 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true } } },
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Md₽' } } }
+        }
+    });
+}
+
+function renderRadar() {
+    destroyChart('radar');
+    const sel = getSelectedRegions();
+    if (sel.length < 2) return;
+    const maxDebt = Math.max(...REGIONS.map(r => r.debt), 1);
+    const maxDR = Math.max(...REGIONS.map(r => getDebtRatio(r)), 1);
+    const maxDRev = Math.max(...REGIONS.map(r => getDebtRev(r)), 1);
+    const maxRev = Math.max(...REGIONS.map(r => r.rev2025), 1);
+    const maxGrp = Math.max(...REGIONS.map(r => r.grp), 1);
+    const colors = ['#0055A4','#EF4135','#F59E0B','#10B981','#8B5CF6','#EC4899','#06B6D4','#F97316','#84CC16','#64748B','#DC2626','#0891B2','#7C3AED','#DB2777','#059669'];
+
+    state.charts.radar = new Chart($('radarChart'), {
+        type: 'radar',
+        data: {
+            labels: ['Dette', 'Dette/GRP', 'Dette/Rec.', 'Recettes', 'GRP', 'Autonomie'],
+            datasets: sel.map((r, i) => ({
+                label: r.name,
+                data: [(r.debt/maxDebt)*100, (getDebtRatio(r)/maxDR)*100, (getDebtRev(r)/maxDRev)*100, (r.rev2025/maxRev)*100, (r.grp/maxGrp)*100, 100 - r.vfi],
+                borderColor: colors[i % colors.length],
+                backgroundColor: colors[i % colors.length] + '22',
+                borderWidth: 2,
+                pointRadius: 2
+            }))
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true, padding: 8 } } },
+            scales: { r: { beginAtZero: true, max: 100, ticks: { display: false }, pointLabels: { font: { size: 10 } } } }
+        }
+    });
+}
+
+function renderTimeseries() {
+    destroyChart('timeseries');
+    const sel = getSelectedRegions();
+    if (!sel.length) return;
+    const colors = ['#0055A4','#EF4135','#F59E0B','#10B981','#8B5CF6','#EC4899','#06B6D4','#F97316','#84CC16','#64748B','#DC2626','#0891B2','#7C3AED','#DB2777','#059669'];
+
+    state.charts.timeseries = new Chart($('timeseriesChart'), {
+        type: 'line',
+        data: {
+            labels: HISTORICAL.years,
+            datasets: sel.map((r, i) => {
+                const base = r.debt;
+                const growth = 0.10 + (r.sustain < 50 ? 0.05 : 0) - (r.sustain > 80 ? 0.03 : 0);
+                const path = [base];
+                for (let y = 0; y < 10; y++) path.unshift(path[0] / (1 + growth + ((i * y * 17) % 100 - 50) / 1000));
+                return {
+                    label: r.name, data: path,
+                    borderColor: colors[i % colors.length],
+                    backgroundColor: colors[i % colors.length] + '22',
+                    borderWidth: 2.5, tension: 0.3, pointRadius: 3, fill: false
+                };
+            })
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true, padding: 8 } } },
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Md₽' } } }
+        }
+    });
+}
+
+function renderScatter() {
+    destroyChart('scatter');
+    const all = REGIONS.map(r => ({ x: r.vfi, y: r.sustain, label: r.name, district: r.district, selected: state.selected.has(r.name) }));
+    state.charts.scatter = new Chart($('scatterChart'), {
+        type: 'scatter',
+        data: {
+            datasets: [
+                { label: 'Toutes', data: all.map(p => ({ x: p.x, y: p.y, label: p.label })), backgroundColor: all.map(p => DISTRICT_COLORS[p.district] + '99'), pointRadius: 6 },
+                { label: 'Sélectionnées', data: all.filter(p => p.selected).map(p => ({ x: p.x, y: p.y, label: p.label })), backgroundColor: 'transparent', borderColor: '#0B1E3A', borderWidth: 2, pointRadius: 10 }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true } },
+                tooltip: { callbacks: { label: ctx => `${ctx.raw.label} : VFI=${ctx.raw.x}% · Sout.=${ctx.raw.y}` } },
+                annotation: { annotations: {
+                    sv: { type: 'line', xMin: 50, xMax: 50, borderColor: 'rgba(245,158,11,0.5)', borderWidth: 2, borderDash: [6,6] },
+                    ss: { type: 'line', yMin: 50, yMax: 50, borderColor: 'rgba(239,65,53,0.5)', borderWidth: 2, borderDash: [6,6] }
+                } }
+            },
+            scales: { x: { title: { display: true, text: 'VFI (%)' }, min: 0, max: 100 }, y: { title: { display: true, text: 'Soutenabilité' }, min: 0, max: 100 } }
+        }
+    });
+}
+
+function renderInstruments() {
+    destroyChart('instruments');
+    const sel = getSelectedRegions();
+    if (!sel.length) return;
+    state.charts.instruments = new Chart($('instrumentsChart'), {
+        type: 'bar',
+        data: {
+            labels: sel.map(r => r.name),
+            datasets: [
+                { label: 'ОФЗ / Obligations', data: sel.map(r => r.instruments.ofz), backgroundColor: 'rgba(0,85,164,0.85)', stack: 's' },
+                { label: 'Crédits bancaires', data: sel.map(r => r.instruments.bank), backgroundColor: 'rgba(239,65,53,0.85)', stack: 's' },
+                { label: 'Prêts budgétaires', data: sel.map(r => r.instruments.budget), backgroundColor: 'rgba(16,185,129,0.85)', stack: 's' },
+                { label: 'Garanties', data: sel.map(r => r.instruments.guarantee), backgroundColor: 'rgba(139,92,246,0.85)', stack: 's' }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label} : ${ctx.parsed.y}%` } } },
+            scales: { x: { stacked: true }, y: { stacked: true, max: 100, ticks: { callback: v => v + '%' } } }
+        }
+    });
+}
+
+function renderDistrict() {
+    destroyChart('district');
+    const d = {};
+    REGIONS.forEach(r => {
+        if (!d[r.district]) d[r.district] = { count: 0, debt: 0, vfi: 0 };
+        d[r.district].count++;
+        d[r.district].debt += r.debt;
+        d[r.district].vfi += r.vfi;
+    });
+    const codes = Object.keys(d);
+    const avgVfis = codes.map(k => d[k].vfi / d[k].count);
+
+    state.charts.district = new Chart($('districtChart'), {
+        type: 'bar',
+        data: {
+            labels: codes.map(k => DISTRICTS[k]),
+            datasets: [
+                { label: 'Dette (Md₽)', data: codes.map(k => d[k].debt), backgroundColor: codes.map(k => DISTRICT_COLORS[k]), borderRadius: 6, yAxisID: 'y' },
+                { label: 'VFI moyen (%)', data: avgVfis, type: 'line', borderColor: '#0B1E3A', backgroundColor: 'transparent', borderWidth: 3, tension: 0.3, pointRadius: 6, pointBackgroundColor: '#0B1E3A', yAxisID: 'y1' }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true } } },
+            scales: {
+                y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Dette (Md₽)' } },
+                y1: { beginAtZero: true, position: 'right', max: 100, title: { display: true, text: 'VFI (%)' }, grid: { drawOnChartArea: false } }
+            }
+        }
+    });
+}
+
+function renderClusters() {
+    destroyChart('clusters');
+    const datasets = Object.entries(CLUSTERS).map(([name, c]) => ({
+        label: name,
+        data: c.regions.map(rn => {
+            const r = REGIONS.find(x => x.name === rn);
+            return r ? { x: r.vfi, y: r.sustain, label: r.name } : null;
+        }).filter(Boolean),
+        backgroundColor: c.color + 'CC',
+        pointRadius: 8,
+        pointHoverRadius: 11
+    }));
+
+    state.charts.clusters = new Chart($('clustersChart'), {
+        type: 'scatter',
+        data: { datasets },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true } },
+                tooltip: { callbacks: { label: ctx => `${ctx.raw.label} : VFI=${ctx.raw.x}% · Sout.=${ctx.raw.y}` } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'VFI (%)' }, min: 0, max: 100 },
+                y: { title: { display: true, text: 'Soutenabilité' }, min: 0, max: 100 }
+            }
+        }
+    });
+}
+
+// ============================================================
+// SUSTAINABILITY TAB
+// ============================================================
+function renderSustainKPIs() {
+    const avgDR = REGIONS.reduce((a, r) => a + getDebtRatio(r), 0) / REGIONS.length;
+    const avgDRev = REGIONS.reduce((a, r) => a + getDebtRev(r), 0) / REGIONS.length;
+    const avgVfi = REGIONS.reduce((a, r) => a + r.vfi, 0) / REGIONS.length;
+    const maxVfi = Math.max(...REGIONS.map(r => r.vfi));
+    const risky = REGIONS.filter(r => r.sustain < 50).length;
+    const donators = REGIONS.filter(r => r.donator).length;
+
+    $('sustainKpiGrid').innerHTML = `
+        <div class="kpi good"><div class="label">Dette/GRP moyen</div><div class="val">${avgDR.toFixed(2)}%</div><div class="sub">Seuil : 5% ✓</div></div>
+        <div class="kpi good"><div class="label">Dette/Recettes moyen</div><div class="val">${avgDRev.toFixed(1)}%</div><div class="sub">Seuil : 42%</div></div>
+        <div class="kpi warn"><div class="label">VFI moyen</div><div class="val">${avgVfi.toFixed(1)}%</div><div class="sub">Dépendance modérée</div></div>
+        <div class="kpi bad"><div class="label">VFI maximal</div><div class="val">${maxVfi}%</div><div class="sub">${REGIONS.find(r => r.vfi === maxVfi).name}</div></div>
+        <div class="kpi warn"><div class="label">Régions donatrices</div><div class="val">${donators} / 89</div><div class="sub">${(donators/89*100).toFixed(0)}%</div></div>
+        <div class="kpi bad"><div class="label">En risque élevé</div><div class="val">${risky}</div><div class="sub">Score &lt; 50</div></div>
+    `;
+}
+
+function renderSustainScatter() {
+    destroyChart('sustainScatter');
+    const all = REGIONS.map(r => ({ x: r.vfi, y: r.sustain, label: r.name, district: r.district }));
+    state.charts.sustainScatter = new Chart($('sustainScatter'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Régions',
+                data: all,
+                backgroundColor: all.map(p => {
+                    if (p.y >= 75) return '#10B981CC';
+                    if (p.y >= 50) return '#F59E0BCC';
+                    return '#EF4135CC';
+                }),
+                pointRadius: 7,
+                pointHoverRadius: 10
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => `${ctx.raw.label} : VFI=${ctx.raw.x}% · Sout.=${ctx.raw.y}` } },
+                annotation: {
+                    annotations: {
+                        zone1: { type: 'box', xMin: 0, xMax: 50, yMin: 75, yMax: 100, backgroundColor: 'rgba(16,185,129,0.06)', borderWidth: 0 },
+                        zone2: { type: 'box', xMin: 50, xMax: 100, yMin: 0, yMax: 50, backgroundColor: 'rgba(239,65,53,0.06)', borderWidth: 0 }
+                    }
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: 'VFI (%)' }, min: 0, max: 100 },
+                y: { title: { display: true, text: 'Soutenabilité' }, min: 0, max: 100 }
+            }
+        }
+    });
+}
+
+function renderMatrix() {
+    destroyChart('matrix');
+    const rgs = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2];
+    const b0s = [80, 100, 113, 120, 140];
+    const g_nom = 0.03;
+    const datasets = [];
+    for (let i = 0; i < b0s.length; i++) {
+        datasets.push({
+            label: `b₀ = ${b0s[i]} %`,
+            data: rgs.map(rg => ({ x: rg, y: b0s[i], v: ((rg/100) / (1 + g_nom)) * b0s[i] * 100 })),
+            backgroundColor: rgs.map(rg => {
+                const v = ((rg/100) / (1 + g_nom)) * b0s[i] * 100;
+                if (v < 0) return 'rgba(16,185,129,0.85)';
+                if (v < 2) return 'rgba(245,158,11,0.75)';
+                if (v < 5) return 'rgba(239,65,53,0.75)';
+                return 'rgba(127,29,29,0.9)';
+            }),
+            pointRadius: 16,
+            pointStyle: 'rect'
+        });
+    }
+    state.charts.matrix = new Chart($('matrixChart'), {
+        type: 'scatter',
+        data: { datasets },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true } },
+                tooltip: { callbacks: { label: ctx => `pb* = ${ctx.raw.v.toFixed(2)} % du GRP` } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'r − g (points de %)' }, min: -2.5, max: 2.5, ticks: { stepSize: 0.5 } },
+                y: { title: { display: true, text: 'Dette initiale b₀ (% GRP)' }, min: 70, max: 150 }
+            }
+        }
+    });
+}
+
+// ============================================================
+// TABLE
+// ============================================================
+function renderTable() {
+    const data = [...REGIONS];
+    const dir = state.tableSortDir === 'desc' ? -1 : 1;
+    data.sort((a, b) => {
+        let va, vb;
+        switch (state.tableSortKey) {
+            case 'name': return state.tableSortDir === 'desc' ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name);
+            case 'district': return state.tableSortDir === 'desc' ? b.district.localeCompare(a.district) : a.district.localeCompare(b.district);
+            case 'grp': va = a.grp; vb = b.grp; break;
+            case 'pop': va = a.pop; vb = b.pop; break;
+            case 'rev': va = a.rev2025; vb = b.rev2025; break;
+            case 'exp': va = a.exp2025; vb = b.exp2025; break;
+            case 'solde': va = getSolde(a); vb = getSolde(b); break;
+            case 'debt': va = a.debt; vb = b.debt; break;
+            case 'debtRatio': va = getDebtRatio(a); vb = getDebtRatio(b); break;
+            case 'debtRev': va = getDebtRev(a); vb = getDebtRev(b); break;
+            case 'vfi': va = a.vfi; vb = b.vfi; break;
+            case 'sustain': va = a.sustain; vb = b.sustain; break;
+            default: va = a.name; vb = b.name;
+        }
+        return (va - vb) * dir;
+    });
+
+    $('dataTableBody').innerHTML = data.map(r => {
+        const solde = getSolde(r);
+        const selected = state.selected.has(r.name);
+        return `<tr class="${selected ? 'selected' : ''}" data-region="${r.name.replace(/"/g, '&quot;')}">
+            <td><strong>${r.name}</strong></td>
+            <td><span class="district-chip" style="background:${DISTRICT_COLORS[r.district]}22;color:${DISTRICT_COLORS[r.district]};">${DISTRICTS[r.district]}</span></td>
+            <td>${fmt(r.grp)}</td>
+            <td>${fmt(r.pop)}</td>
+            <td>${fmt(r.rev2025, 1)}</td>
+            <td>${fmt(r.exp2025, 1)}</td>
+            <td class="${solde >= 0 ? 'pos' : 'neg'}">${solde >= 0 ? '+' : ''}${fmt(solde, 1)}</td>
+            <td>${fmt(r.debt, 1)}</td>
+            <td>${getDebtRatio(r).toFixed(1)}%</td>
+            <td>${getDebtRev(r).toFixed(1)}%</td>
+            <td>${r.vfi}%</td>
+            <td class="${getSustainClass(r.sustain)}">${r.sustain}</td>
+        </tr>`;
+    }).join('');
+
+    document.querySelectorAll('.data-table th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.dataset.sort === state.tableSortKey) {
+            th.classList.add(state.tableSortDir === 'desc' ? 'sort-desc' : 'sort-asc');
+        }
+        if (th.dataset.sort) th.classList.add('sortable');
+    });
+
+    document.querySelectorAll('#dataTableBody tr').forEach(tr => {
+        tr.addEventListener('click', () => {
+            const name = tr.dataset.region;
+            if (state.selected.has(name)) state.selected.delete(name);
+            else if (state.selected.size < 15) state.selected.add(name);
+            renderRegionGrid();
+            renderTable();
+            runAllCharts();
+        });
+    });
+}
+
+function initTableSort() {
+    document.querySelectorAll('.data-table th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const key = th.dataset.sort;
+            if (state.tableSortKey === key) state.tableSortDir = state.tableSortDir === 'desc' ? 'asc' : 'desc';
+            else { state.tableSortKey = key; state.tableSortDir = 'desc'; }
+            renderTable();
+        });
+    });
+}
+
+// ============================================================
+// MAP SVG
+// ============================================================
+function renderMap() {
+    const svg = $('russiaMap');
+    if (!svg) return;
+    const W = 1000, H = 600;
+
+    // Carte simplifiée : grille positionnée manuellement pour approximation
+    // Chaque cellule = 1 région avec couleur selon dette
+    const positions = {};
+    const cols = 12, rows = 8;
+    const cellW = (W - 40) / cols;
+    const cellH = (H - 40) / rows;
+
+    let idx = 0;
+    const sorted = [...REGIONS].sort((a, b) => {
+        // Approximation géographique par district
+        const order = { 'SZFO': 0, 'CFO': 1, 'PFO': 2, 'UFO': 3, 'SFO': 4, 'DFO': 5, 'YFO': 6, 'SKFO': 7, 'NEW': 8 };
+        return order[a.district] - order[b.district];
+    });
+
+    svg.innerHTML = `<rect width="${W}" height="${H}" fill="transparent"/>`;
+
+    sorted.forEach((r, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = 20 + col * cellW;
+        const y = 20 + row * cellH;
+        const color = r.debt > 200 ? '#7F1D1D' : r.debt > 100 ? '#EF4135' : r.debt > 50 ? '#F59E0B' : '#10B981';
+        const selected = state.selected.has(r.name);
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x + 1);
+        rect.setAttribute('y', y + 1);
+        rect.setAttribute('width', cellW - 2);
+        rect.setAttribute('height', cellH - 2);
+        rect.setAttribute('rx', 4);
+        rect.setAttribute('fill', color);
+        rect.setAttribute('class', 'region-path' + (selected ? ' selected' : ''));
+        rect.setAttribute('data-region', r.name);
+        rect.innerHTML = `<title>${r.name} · Dette : ${r.debt} Md₽ · VFI : ${r.vfi}%</title>`;
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x + cellW / 2);
+        text.setAttribute('y', y + cellH / 2 - 4);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', 'white');
+        text.setAttribute('font-size', '9');
+        text.setAttribute('font-weight', '700');
+        text.setAttribute('font-family', 'Inter, sans-serif');
+        text.setAttribute('pointer-events', 'none');
+        text.textContent = r.name.length > 14 ? r.name.slice(0, 12) + '…' : r.name;
+
+        const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        sub.setAttribute('x', x + cellW / 2);
+        sub.setAttribute('y', y + cellH / 2 + 8);
+        sub.setAttribute('text-anchor', 'middle');
+        sub.setAttribute('fill', 'white');
+        sub.setAttribute('font-size', '8');
+        sub.setAttribute('font-family', 'JetBrains Mono, monospace');
+        sub.setAttribute('pointer-events', 'none');
+        sub.textContent = r.debt + ' Md₽';
+
+        svg.appendChild(rect);
+        svg.appendChild(text);
+        svg.appendChild(sub);
+
+        rect.addEventListener('click', () => {
+            const name = r.name;
+            if (state.selected.has(name)) state.selected.delete(name);
+            else if (state.selected.size < 15) state.selected.add(name);
+            renderMap();
+            renderRegionGrid();
+            renderTable();
+            runAllCharts();
+        });
+    });
+}
+
+// ============================================================
+// EXPORTS
+// ============================================================
+function exportCSV() {
+    const headers = ['Région', 'District', 'GRP', 'Pop', 'Recettes', 'Dépenses', 'Solde', 'Dette', 'Dette/GRP', 'Dette/Rec.', 'VFI', 'Soutenabilité'];
+    const rows = REGIONS.map(r => [r.name, DISTRICTS[r.district], r.grp, r.pop, r.rev2025, r.exp2025, getSolde(r).toFixed(1), r.debt, getDebtRatio(r).toFixed(2), getDebtRev(r).toFixed(2), r.vfi, r.sustain]);
+    const csv = '\ufeff' + [headers, ...rows].map(r => r.join(';')).join('\n');
+    triggerDownload(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `comptes_regionaux_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+function exportJSON() {
+    const payload = { generated_at: new Date().toISOString(), count: REGIONS.length, regions: REGIONS.map(r => ({ ...r, solde: getSolde(r), dette_grp: getDebtRatio(r), dette_rev: getDebtRev(r) })) };
+    triggerDownload(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), `comptes_regionaux_${new Date().toISOString().slice(0,10)}.json`);
+}
+
+function exportXls() {
+    const table = $('dataTable');
+    const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body>${table.outerHTML}</body></html>`;
+    triggerDownload(new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' }), `comptes_regionaux_${new Date().toISOString().slice(0,10)}.xls`);
+}
+
+function exportPDF() {
+    // Ouvre une fenêtre avec le rapport prêt à imprimer en PDF
+    const win = window.open('', '_blank');
+    const totalRev = REGIONS.reduce((a, r) => a + r.rev2025, 0);
+    const totalExp = REGIONS.reduce((a, r) => a + r.exp2025, 0);
+    const totalDebt = REGIONS.reduce((a, r) => a + r.debt, 0);
+    const sel = getSelectedRegions();
+
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rapport - Comptes régionaux Russie</title>
+    <style>
+        body{font-family:'Inter',sans-serif;padding:30px;color:#0B1E3A;line-height:1.6;}
+        h1{color:#0055A4;border-bottom:3px solid #EF4135;padding-bottom:10px;}
+        h2{color:#0055A4;margin-top:26px;font-size:16px;}
+        .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0;}
+        .kpi{border-left:3px solid #0055A4;padding:10px 14px;background:#F0F4F8;border-radius:6px;}
+        .kpi .label{font-size:10px;text-transform:uppercase;color:#64748B;font-weight:700;letter-spacing:0.5px;}
+        .kpi .val{font-size:18px;font-weight:800;margin-top:4px;font-family:'JetBrains Mono',monospace;}
+        table{width:100%;border-collapse:collapse;font-size:11px;margin-top:12px;}
+        th{background:#0055A4;color:white;padding:6px 8px;text-align:left;font-size:10px;}
+        td{padding:5px 8px;border-bottom:1px solid #e2e8f0;}
+        tr:nth-child(even) td{background:#F8FAFC;}
+        .bad{color:#EF4135;font-weight:700;}
+        .good{color:#10B981;font-weight:700;}
+        .warn{color:#F59E0B;font-weight:700;}
+        .footer{margin-top:30px;font-size:10px;color:#64748B;text-align:center;}
+        @media print{body{padding:15px;}}
+    </style></head><body>
+    <h1>🇷🇺 Rapport · Comptes régionaux de Russie</h1>
+    <p><strong>Date :</strong> ${new Date().toLocaleDateString('fr-FR')} · <strong>Régions :</strong> 89 sujets fédéraux</p>
+
+    <h2>📊 Indicateurs globaux</h2>
+    <div class="kpi-grid">
+        <div class="kpi"><div class="label">Recettes</div><div class="val">${fmt(totalRev, 1)} Md₽</div></div>
+        <div class="kpi"><div class="label">Dépenses</div><div class="val">${fmt(totalExp, 1)} Md₽</div></div>
+        <div class="kpi"><div class="label">Solde</div><div class="val bad">${fmt(totalRev - totalExp, 1)} Md₽</div></div>
+        <div class="kpi"><div class="label">Dette totale</div><div class="val">${fmt(totalDebt, 1)} Md₽</div></div>
+    </div>
+
+    <h2>🎯 Régions sélectionnées (${sel.length})</h2>
+    <table>
+        <thead><tr><th>Région</th><th>District</th><th>GRP</th><th>Recettes</th><th>Dépenses</th><th>Solde</th><th>Dette</th><th>VFI</th><th>Sout.</th></tr></thead>
+        <tbody>
+        ${sel.map(r => `<tr>
+            <td><strong>${r.name}</strong></td>
+            <td>${DISTRICTS[r.district]}</td>
+            <td>${fmt(r.grp)}</td>
+            <td>${fmt(r.rev2025, 1)}</td>
+            <td>${fmt(r.exp2025, 1)}</td>
+            <td class="${getSolde(r) >= 0 ? 'good' : 'bad'}">${getSolde(r) >= 0 ? '+' : ''}${fmt(getSolde(r), 1)}</td>
+            <td>${fmt(r.debt, 1)}</td>
+            <td>${r.vfi}%</td>
+            <td class="${getSustainClass(r.sustain)}">${r.sustain}</td>
+        </tr>`).join('')}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Rapport généré automatiquement · Dashboard académique · Sources : Roskazna · Minfin · ACRA
+    </div>
+
+    <script>setTimeout(() => window.print(), 400);<\/script>
+    </body></html>`);
+    win.document.close();
+}
+
+function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// ============================================================
+// URL STATE
+// ============================================================
+function syncURL() {
+    const params = new URLSearchParams();
+    if (state.selected.size) params.set('regions', [...state.selected].join('|'));
+    if (state.activeMainTab !== 'tab-overview') params.set('tab', state.activeMainTab);
+    if (state.filterDistrict) params.set('district', state.filterDistrict);
+    if (state.year !== 2025) params.set('year', state.year);
+    const qs = params.toString();
+    history.replaceState(null, '', qs ? '?' + qs : location.pathname);
+}
+
+function readURL() {
+    const p = new URLSearchParams(location.search);
+    if (p.get('regions')) {
+        state.selected.clear();
+        p.get('regions').split('|').forEach(n => { if (REGIONS.find(r => r.name === n)) state.selected.add(n); });
+    }
+    if (p.get('tab')) state.activeMainTab = p.get('tab');
+    if (p.get('district')) state.filterDistrict = p.get('district');
+    if (p.get('year')) state.year = parseInt(p.get('year'));
+}
+
+// ============================================================
+// MAIN TABS
+// ============================================================
+function initMainTabs() {
+    document.querySelectorAll('.main-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            const panel = document.getElementById(btn.dataset.main);
+            if (panel) panel.classList.add('active');
+            state.activeMainTab = btn.dataset.main;
+            syncURL();
+
+            if (btn.dataset.main === 'tab-map') renderMap();
+            if (btn.dataset.main === 'tab-sustain') { renderSustainKPIs(); renderSustainScatter(); renderMatrix(); }
+        });
+    });
+}
+
+function initSubTabs() {
+    document.querySelectorAll('.tab-btn[data-sub]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn[data-sub]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.subtab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            const panel = document.getElementById(btn.dataset.sub);
+            if (panel) panel.classList.add('active');
+            state.activeSubTab = btn.dataset.sub;
+        });
+    });
+}
+
+// ============================================================
+// RUN ALL
+// ============================================================
+function runAllCharts() {
+    renderMultiBar();
+    renderRadar();
+    renderTimeseries();
+    renderScatter();
+    renderInstruments();
+    renderDistrict();
+    renderClusters();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.font.size = 11;
+
+    readURL();
+    applyTheme();
+    renderKPIs();
+    renderOverviewEvolution();
+    renderTopDebt();
+    renderHistory();
+    initDistrictFilter();
+    renderRegionGrid();
+    renderTable();
+    initTableSort();
+    initMainTabs();
+    initSubTabs();
+    runAllCharts();
+    renderSustainKPIs();
+    renderSustainScatter();
+    renderMatrix();
+
+    // Reactiver onglet
+    if (state.activeMainTab) {
+        const tab = document.querySelector(`.main-tab[data-main="${state.activeMainTab}"]`);
+        if (tab) tab.click();
+    }
+
+    // Filtres
+    $('filterDistrict').addEventListener('change', e => { state.filterDistrict = e.target.value; renderRegionGrid(); syncURL(); });
+    $('sortRegions').addEventListener('change', e => { state.sortRegions = e.target.value; renderRegionGrid(); });
+    $('searchRegion').addEventListener('input', e => { state.searchQuery = e.target.value.toLowerCase(); renderRegionGrid(); });
+    $('filterYear').addEventListener('change', e => { state.year = parseInt(e.target.value); $('yearBadge').textContent = state.year; $('yearLabel1').textContent = state.year; syncURL(); });
+
+    // Actions rapides
+    $('btnSelectAll').addEventListener('click', () => { getFilteredRegions().slice(0, 15).forEach(r => state.selected.add(r.name)); renderRegionGrid(); renderTable(); runAllCharts(); });
+    $('btnSelectNone').addEventListener('click', () => { state.selected.clear(); renderRegionGrid(); renderTable(); runAllCharts(); });
+    $('btnSelectTop10').addEventListener('click', () => { state.selected.clear(); [...REGIONS].sort((a,b)=>b.debt-a.debt).slice(0,10).forEach(r=>state.selected.add(r.name)); renderRegionGrid(); renderTable(); runAllCharts(); });
+    $('btnSelectDonators').addEventListener('click', () => { state.selected.clear(); REGIONS.filter(r=>r.donator).forEach(r=>state.selected.add(r.name)); renderRegionGrid(); renderTable(); runAllCharts(); });
+    $('btnSelectRisky').addEventListener('click', () => { state.selected.clear(); REGIONS.filter(r=>r.sustain < 50).slice(0,15).forEach(r=>state.selected.add(r.name)); renderRegionGrid(); renderTable(); runAllCharts(); });
+    $('btnMapReset').addEventListener('click', () => { state.selected.clear(); renderMap(); renderRegionGrid(); renderTable(); runAllCharts(); });
+
+    // Exports
+    $('btnCsv').addEventListener('click', exportCSV);
+    $('btnJson').addEventListener('click', exportJSON);
+    $('btnXls').addEventListener('click', exportXls);
+    $('btnPdf').addEventListener('click', exportPDF);
+    $('btnApi').addEventListener('click', () => {
+        const json = JSON.stringify({ generated_at: new Date().toISOString(), count: REGIONS.length, regions: REGIONS });
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+    });
+
+    // Thème
+    $('themeBtn').addEventListener('click', () => {
+        state.theme = state.theme === 'dark' ? 'light' : 'dark';
+        applyTheme();
+        renderOverviewEvolution();
+        renderTopDebt();
+        runAllCharts();
+        renderSustainScatter();
+        renderMatrix();
+    });
+
+    // URL
+    $('urlBtn').addEventListener('click', () => {
+        syncURL();
+        navigator.clipboard.writeText(location.href).then(() => {
+            $('urlBtn').textContent = '✓';
+            setTimeout(() => $('urlBtn').textContent = '🔗', 1500);
+        });
+    });
+
+    syncURL();
+});
+</script>
+</body>
+</html>
