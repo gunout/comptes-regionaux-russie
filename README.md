@@ -4,11 +4,11 @@ Dashboard d'analyse budgétaire des 89 sujets fédéraux russes. Comparaison mul
 
 [![Licence MIT](https://img.shields.io/badge/Licence-MIT-ED2939?style=for-the-badge)](LICENSE)
 [![Made in France](https://img.shields.io/badge/Made_in-France-002395?style=for-the-badge&labelColor=FFFFFF&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cmVjdCB3aWR0aD0iOTAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iIzAwMjM5NSIvPjxyZWN0IHdpZHRoPSI5MDAiIGhlaWdodD0iNDAwIiB5PSIxMDAiIGZpbGw9IiNmZmYiLz48cmVjdCB3aWR0aD0iOTAwIiBoZWlnaHQ9IjIwMCIgeT0iNDAwIiBmaWxsPSIjZWQyOTM5Ii8+PC9zdmc+)](https://github.com/gunout)
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)](https://github.com/gunout)
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](https://github.com/gunout)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)](https://github.com/gunout/comptes-regionaux-russie)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](https://github.com/gunout/comptes-regionaux-russie)
 [![Chart.js](https://img.shields.io/badge/Chart.js-4.4-FF6384?style=flat-square&logo=chartdotjs&logoColor=white)](https://www.chartjs.org/)
-[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-en_ligne-222?style=flat-square&logo=githubpages&logoColor=white)](https://gunout.github.io/dashboard-russie-regions/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/gunout/dashboard-russie-regions/pulls)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-en_ligne-222?style=flat-square&logo=githubpages&logoColor=white)](https://gunout.github.io/comptes-regionaux-russie/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/gunout/comptes-regionaux-russie/pulls)
 [![Open Data](https://img.shields.io/badge/Open_Data-Roskazna_Minfin-ff6f00?style=flat-square)](https://roskazna.gov.ru)
 [![Domar](https://img.shields.io/badge/Mod%C3%A8le-Domar_%C3%A9tendu-0055A4?style=flat-square)](https://en.wikipedia.org/wiki/Domar_model)
 [![DSA](https://img.shields.io/badge/Analyse-DSA_FMI-8B5CF6?style=flat-square)](https://www.imf.org)
@@ -95,7 +95,7 @@ L'application est **100 % côté client** : aucune donnée n'est envoyée à un 
 
 ### 🌐 Application en ligne
 
-👉 [**https://gunout.github.io/dashboard-russie-regions/**](https://gunout.github.io/dashboard-russie-regions/)
+👉 [**https://gunout.github.io/comptes-regionaux-russie/**](https://gunout.github.io/comptes-regionaux-russie/)
 
 Aucune installation, aucune inscription. Ouvrez le lien dans un navigateur moderne.
 
@@ -106,8 +106,8 @@ Aucune installation, aucune inscription. Ouvrez le lien dans un navigateur moder
 ### Utilisation directe (recommandée)
 
 ```bash
-git clone https://github.com/gunout/dashboard-russie-regions.git
-cd dashboard-russie-regions
+git clone https://github.com/gunout/comptes-regionaux-russie.git
+cd comptes-regionaux-russie
 # Ouvrez index.html dans votre navigateur
 ```
 
@@ -131,7 +131,7 @@ Puis ouvrez `http://localhost:8000/index.html`.
 
 L'application est **déjà déployée** à l'adresse :
 
-**🔗 [https://gunout.github.io/dashboard-russie-regions/](https://gunout.github.io/dashboard-russie-regions/)**
+**🔗 [https://gunout.github.io/comptes-regionaux-russie/](https://gunout.github.io/comptes-regionaux-russie/)**
 
 ### Déployer sur votre propre fork
 
@@ -382,3 +382,6 @@ SOFTWARE.
 Fait pour la communauté économique open source.
 
 </div>
+
+---
+
